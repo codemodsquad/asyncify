@@ -11,7 +11,10 @@ import * as prettier from 'prettier'
 
 const prettierOptions = { ...pkgConf.sync('prettier'), parser: 'babel' }
 const normalize = (code: string): string =>
-  prettier.format(code, prettierOptions).trim()
+  prettier
+    .format(code, prettierOptions)
+    .replace(/^\s*(\r\n?|\n)/gm, '')
+    .trim()
 
 export default function textFixtures({
   glob,
@@ -46,20 +49,31 @@ export default function textFixtures({
         ? path.resolve(path.dirname(fixturePath), fixture.file)
         : fixturePath
     )
-    const position = input.indexOf('// position')
-    let selectionStart = input.indexOf('// selectionStart')
-    let selectionEnd = input.indexOf('// selectionEnd')
-    if (selectionStart < 0) selectionStart = position
-    if (selectionEnd < 0) selectionEnd = position
-    const options = { ...transformOptions, ...fixture.options }
-    if (selectionStart >= 0 && selectionEnd >= 0) {
-      Object.assign(options, { selectionStart, selectionEnd })
-    }
     it(path.basename(fixturePath).replace(/\.js$/, ''), function() {
-      const source = input.replace(
-        /^\s*\/\/\s*(position|selectionStart|selectionEnd).*(\r\n?|\n)/gm,
-        ''
-      )
+      let source = input
+      const position = source.indexOf('// position')
+      if (position >= 0) {
+        source = source.replace(/^\s*\/\/ position[^\r\n]*(\r\n?|\n)/gm, '')
+      }
+      let selectionStart = source.indexOf('/* selectionStart */')
+      let selectionEnd
+      if (selectionStart >= 0) {
+        source = source.replace('/* selectionStart */', '')
+        selectionEnd = source.indexOf('/* selectionEnd */')
+        if (selectionEnd < 0) {
+          throw new Error(
+            '/* selectionEnd */ must be given if /* selectionStart */ is'
+          )
+        }
+        source = source.replace('/* selectionEnd */', '')
+      }
+      if (selectionStart < 0) selectionStart = position
+      if (selectionEnd < 0) selectionEnd = position
+      const options = { ...transformOptions, ...fixture.options }
+      if (selectionStart >= 0 && selectionEnd >= 0) {
+        Object.assign(options, { selectionStart, selectionEnd })
+      }
+
       const stats: Record<string, number> = {}
       const report = []
       const parser = fixture.parser || defaultParser

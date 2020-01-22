@@ -1,9 +1,10 @@
 export const input = `
 function foo() {}
-// selectionStart
+/* selectionStart */
 function bar() {}
 function baz() {}
-// selectionEnd
+/* selectionEnd */
+function qux() {}
 `
 
 export const expected = `
@@ -12,4 +13,5 @@ console.log('hello world')
 function bar() {}
 console.log('hello world')
 function baz() {}
+function qux() {}
 `
