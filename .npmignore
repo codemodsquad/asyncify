@@ -6,6 +6,7 @@
 !yarn.lock
 /src
 /test
+/scripts
 /coverage
 /flow-typed
 __tests__
