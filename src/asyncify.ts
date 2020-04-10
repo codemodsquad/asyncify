@@ -13,6 +13,9 @@ import {
   BlockStatement,
   Identifier,
   VariableDeclarator,
+  ArrayPattern,
+  ObjectProperty,
+  Pattern,
 } from '@babel/types'
 import template from '@babel/template'
 import * as t from '@babel/types'
@@ -343,22 +346,62 @@ export class Unwinder {
     }
   }
 
-  private renameBoundIdentifiers(handler: NodePath<Function>): void {
-    const param = handler.get('params')[0]
-    if (param && param.isIdentifier()) {
-      this.renameIdentifierIfNecessary(param)
-    }
+  // private renameIdentifiersIfNecessary(path: NodePath<any>): void {
+  //   if (path.isIdentifier()) {
+  //     this.renameIdentifierIfNecessary(path)
+  //   } else if (path.isArrayPattern()) {
+  //     const elements = path.get('elements')
+  //     if (Array.isArray(elements)) {
+  //       for (const element of elements) {
+  //         if (element) this.renameIdentifiersIfNecessary(element)
+  //       }
+  //     }
+  //   } else if (path.isObjectPattern()) {
+  //     const properties = path.get('properties')
+  //     if (Array.isArray(properties)) {
+  //       for (const property of properties) {
+  //         this.renameIdentifiersIfNecessary(property)
+  //       }
+  //     }
+  //   } else if (path.isObjectProperty()) {
+  //     this.renameIdentifiersIfNecessary(path.get('value'))
+  //   } else if (path.isAssignmentPattern()) {
+  //     this.renameIdentifiersIfNecessary(path.get('left'))
+  //   } else if (path.isRestElement()) {
+  //     this.renameIdentifiersIfNecessary(path.get('argument'))
+  //   }
+  // }
 
-    handler.get('body').traverse({
-      VariableDeclarator: (path: NodePath<VariableDeclarator>) => {
-        const id = path.get('id')
-        if (id.isIdentifier()) {
-          this.renameIdentifierIfNecessary(id)
+  private renameBoundIdentifiers(handler: NodePath<Function>): void {
+    // const param = handler.get('params')[0]
+    // if (param) {
+    //   this.renameIdentifiersIfNecessary(param)
+    // }
+
+    // handler.get('body').traverse({
+    //   VariableDeclarator: (path: NodePath<VariableDeclarator>) => {
+    //     this.renameIdentifiersIfNecessary(path.get('id'))
+    //     path.skip()
+    //   },
+    //   BlockStatement(path: NodePath<BlockStatement>) {
+    //     path.skip()
+    //   },
+    //   Function(path: NodePath<Function>) {
+    //     path.skip()
+    //   },
+    // })
+
+    // TODO handle var properly
+    handler.traverse({
+      Identifier: (path: NodePath<Identifier>) => {
+        if (path.scope.getBindingIdentifier(path.node.name) === path.node) {
+          this.renameIdentifierIfNecessary(path)
         }
-        // TODO destructuring
-        path.skip()
       },
       BlockStatement(path: NodePath<BlockStatement>) {
+        if (path.parentPath !== handler) path.skip()
+      },
+      Function(path: NodePath<Function>) {
         path.skip()
       },
     })

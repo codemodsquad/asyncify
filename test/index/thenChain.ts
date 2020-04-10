@@ -5,7 +5,7 @@ function foo() {
     return bar()
   }).then(baz => {
     return baz * 2
-  }).then(baz => {
+  }).then(([{foo: baz = 5}]) => {
     return baz + 3
   })
 }
@@ -18,7 +18,7 @@ async function foo() {
   const bar = () => 3
   const bar_asyncify_1 = await bar()
   const baz = await bar_asyncify_1()
-  const baz_asyncify_2 = baz * 2
-  return baz_asyncify_2 + 3
+  const [{ foo: baz_asyncify_3 = 5 }] = baz * 2
+  return baz_asyncify_3 + 3
 }
 `
