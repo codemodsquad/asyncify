@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { it } from 'mocha'
 import { expect } from 'chai'
 import requireGlob from 'require-glob'
 import jscodeshift, { Transform } from 'jscodeshift'
