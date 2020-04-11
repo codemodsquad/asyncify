@@ -137,19 +137,6 @@ export function getFinallyHandler(
     : null
 }
 
-export function preceedingPromiseMethodCall(
-  path: NodePath<t.CallExpression>
-): NodePath<t.CallExpression> | null {
-  const callee = path.get('callee')
-  if (callee.isMemberExpression()) {
-    const object = (callee as NodePath<t.MemberExpression>).get('object')
-    if (isPromiseMethodCall(object.node)) {
-      return object as NodePath<t.CallExpression>
-    }
-  }
-  return null
-}
-
 export function getFinalReturn(
   path: NodePath<t.BlockStatement>
 ): NodePath<t.ReturnStatement> | null {
@@ -268,22 +255,26 @@ function parentFunction<T extends t.Node>(
 function renameBoundIdentifiers<T extends t.Function>(
   handler: NodePath<T>
 ): void {
-  function identifierIsBound(name: string): boolean {
+  function isBound(name: string): boolean {
     return handler.scope.hasBinding(name)
   }
 
-  function renameIdentifier(path: NodePath<t.Identifier>): void {
+  function rename(path: NodePath<t.Identifier>): void {
     let newName = path.node.name
     let counter = 0
-    while (identifierIsBound(newName))
-      newName = `${path.node.name}_ASYNCIFY_${counter++}`
+    while (isBound(newName)) newName = `${path.node.name}_ASYNCIFY_${counter++}`
     path.scope.rename(path.node.name, newName)
   }
 
-  function renameIdentifierIfNecessary(path: NodePath<t.Identifier>): void {
-    if (identifierIsBound(path.node.name)) {
-      renameIdentifier(path)
-    }
+  function mustRename(path: NodePath<t.Identifier>): boolean {
+    const { name } = path.node
+    return (
+      isBound(name) &&
+      path.isBindingIdentifier() &&
+      ((scope.hasBinding(name) &&
+        handler.scope.getBindingIdentifier(name) === path.node) ||
+        path.scope.getBinding(name)?.kind === 'var')
+    )
   }
 
   const fn = parentFunction(handler)
@@ -291,14 +282,7 @@ function renameBoundIdentifiers<T extends t.Function>(
 
   handler.traverse({
     Identifier: (path: NodePath<t.Identifier>) => {
-      if (
-        path.isBindingIdentifier() &&
-        ((scope.hasBinding(path.node.name) &&
-          handler.scope.getBindingIdentifier(path.node.name) === path.node) ||
-          path.scope.getBinding(path.node.name)?.kind === 'var')
-      ) {
-        renameIdentifierIfNecessary(path)
-      }
+      if (mustRename(path)) rename(path)
     },
     Function(path: NodePath<t.Function>) {
       path.skipKey('body')
@@ -324,9 +308,10 @@ function replaceLink(
   link: NodePath<t.CallExpression>,
   replacement: t.Expression
 ): NodePath<any>[] {
-  if (link.parentPath.isAwaitExpression())
-    return link.parentPath.replaceWith(awaitedIfNecessary(replacement)) as any
-  else return link.replaceWith(awaitedIfNecessary(replacement)) as any
+  const { parentPath } = link
+  return (parentPath.isAwaitExpression() ? parentPath : link).replaceWith(
+    awaitedIfNecessary(replacement)
+  ) as any
 }
 
 export function unwindThen(
