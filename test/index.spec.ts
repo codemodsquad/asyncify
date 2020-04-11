@@ -3,11 +3,6 @@
 import * as fs from 'fs'
 import * as path from 'path'
 import testFixtures from './testFixtures'
-import { _resetIdCounterForTests } from '../src/asyncify'
-
-beforeEach(() => {
-  _resetIdCounterForTests()
-})
 
 const dirs = fs.readdirSync(__dirname)
 for (const dir of dirs) {

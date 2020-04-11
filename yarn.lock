@@ -7132,6 +7132,13 @@ promise-retry@^1.1.1:
     err-code "^1.0.0"
     retry "^0.10.0"
 
+promisify-child-process@^3.1.4:
+  version "3.1.4"
+  resolved "https://registry.yarnpkg.com/promisify-child-process/-/promisify-child-process-3.1.4.tgz#3321827f283c0be30de1354bec1c6c627f02d53c"
+  integrity sha512-tLifJs99E4oOXUz/dKQjRgdchfiepmYQzBVrcVX9BtUWi9aGJeGSf2KgXOWBW1JFsSYgLkl1Z9HRm8i0sf4cTg==
+  dependencies:
+    "@babel/runtime" "^7.1.5"
+
 promzard@^0.3.0:
   version "0.3.0"
   resolved "https://registry.yarnpkg.com/promzard/-/promzard-0.3.0.tgz#26a5d6ee8c7dee4cb12208305acfb93ba382a9ee"
