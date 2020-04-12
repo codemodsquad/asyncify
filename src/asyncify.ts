@@ -98,9 +98,7 @@ export function getThenHandler(
     return null
   }
   const handler = path.get('arguments')[0]
-  return handler && handler.isExpression() && !isNullish(handler.node)
-    ? handler
-    : null
+  return handler && handler.isExpression() ? handler : null
 }
 
 export function getCatchHandler(
@@ -115,9 +113,7 @@ export function getCatchHandler(
     return null
   }
   const handler = path.get('arguments')[callee.property.name === 'then' ? 1 : 0]
-  return handler && handler.isExpression() && !isNullish(handler.node)
-    ? handler
-    : null
+  return handler && handler.isExpression() ? handler : null
 }
 
 export function getFinallyHandler(
@@ -132,9 +128,7 @@ export function getFinallyHandler(
     return null
   }
   const handler = path.get('arguments')[0]
-  return handler && handler.isExpression() && !isNullish(handler.node)
-    ? handler
-    : null
+  return handler && handler.isExpression() ? handler : null
 }
 
 export function getFinalReturn(
@@ -227,12 +221,13 @@ export function convertBodyToSingleReturn(
   }
 }
 
-function unboundIdentifier<T>(path: NodePath<T>): t.Identifier {
-  let name
+function unboundIdentifier<T>(
+  path: NodePath<T>,
+  prefix?: string
+): t.Identifier {
   let counter = 0
-  do {
-    name = `_ASYNCIFY_${counter++}`
-  } while (path.scope.getBinding(name) != null)
+  let name = prefix || `_ASYNCIFY_${counter++}`
+  while (path.scope.hasBinding(name)) name = `_ASYNCIFY_${counter++}`
   return t.identifier(name)
 }
 
@@ -314,6 +309,13 @@ function replaceLink(
   ) as any
 }
 
+function isValueConsumed<T extends t.Expression>(expr: NodePath<T>): boolean {
+  let { parentPath } = expr
+  if (parentPath.isExpressionStatement()) return false
+  if (parentPath.isAwaitExpression()) return isValueConsumed(parentPath)
+  return true
+}
+
 export function unwindThen(
   handler: NodePath<t.Expression>
 ): NodePath<t.Expression> {
@@ -323,6 +325,11 @@ export function unwindThen(
     throw new Error(`code that uses V8 intrinsic identifiers isn't supported`)
   }
   const { object } = callee.node
+
+  if (isNullish(handler.node)) {
+    const [replaced]: [NodePath<t.Expression>] = link.replaceWith(object) as any
+    return replaced
+  }
 
   if (handler.isFunction()) {
     renameBoundIdentifiers(handler)
@@ -382,6 +389,71 @@ export function unwindThen(
   }
 }
 
+export function unwindCatch(
+  handler: NodePath<t.Expression>
+): NodePath<t.Expression> {
+  const link = handler.parentPath as NodePath<t.CallExpression>
+  const callee = link.get('callee')
+  if (!callee.isMemberExpression()) {
+    throw new Error(`code that uses V8 intrinsic identifiers isn't supported`)
+  }
+  const { object } = callee.node
+  const isThenCatch = getThenHandler(link) != null
+  if (isThenCatch) handler.remove()
+  if (isNullish(handler.node)) {
+    if (isThenCatch) return link as any
+    const [replaced]: [NodePath<t.Expression>] = link.replaceWith(object) as any
+    return replaced
+  }
+
+  let tryStatements: t.Statement[]
+  let catchStatements: t.Statement[]
+
+  if (handler.isFunction()) {
+    renameBoundIdentifiers(handler)
+
+    const body = (handler as NodePath<t.Function>).get('body')
+
+    const fn = handler.node
+    const input = (handler as NodePath<t.Function>).get('params')?.[0]
+
+    const statement = parentStatement(link)
+    let newPath: NodePath<t.Expression>
+    // TODO use let if values are reassigned
+    let tryStatement = input
+      ? template.statement.ast`const ${input.node} = ${awaitedIfNecessary(
+          object
+        )}`
+      : t.expressionStatement(awaitedIfNecessary(object))
+
+    if (body.isBlockStatement()) {
+      const returnValue = convertBodyToSingleReturn(
+        body,
+        getOutputIdentifier(link)
+      )
+      statement.insertBefore(body.node.body)
+      if (returnValue) {
+        replaceLink(link, returnValue)
+      } else {
+        if (input.isPattern()) {
+          // TODO
+        }
+        replaceLink(
+          link,
+          t.callExpression(fn, input.node ? [input.node as any] : [])
+        )
+      }
+    } else if (body.node.type !== 'BlockStatement') {
+      replaceLink(link, body.node)
+    }
+  } else {
+    const [replacement] = replaceLink(
+      link,
+      t.callExpression(handler.node, [awaitedIfNecessary(callee.node)])
+    ) as any
+  }
+}
+
 export function unwindPromiseChain(path: NodePath<t.CallExpression>): void {
   const { scope } = path
 
@@ -392,9 +464,13 @@ export function unwindPromiseChain(path: NodePath<t.CallExpression>): void {
     const catchHandler = getCatchHandler(link)
     const finallyHandler = getFinallyHandler(link)
 
+    const callee = (link as NodePath<t.CallExpression>).get('callee')
+    const object = callee.isMemberExpression()
+      ? (callee as NodePath<t.MemberExpression>).get('object')
+      : null
+
     if (catchHandler) {
-      // TODO
-      link = null
+      link = unwindCatch(catchHandler)
     } else if (thenHandler) {
       link = unwindThen(thenHandler)
     } else if (finallyHandler) {

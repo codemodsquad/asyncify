@@ -1,0 +1,638 @@
+
+{
+  "header": {
+    "reportVersion": 1,
+    "event": "Allocation failed - JavaScript heap out of memory",
+    "trigger": "FatalError",
+    "filename": "report.20200412.003003.14195.0.001.json",
+    "dumpEventTime": "2020-04-12T00:30:03Z",
+    "dumpEventTimeStamp": "1586669403500",
+    "processId": 14195,
+    "cwd": "/Users/andy/codemodsquad/asyncify",
+    "commandLine": [
+      "/usr/local/Cellar/node/12.12.0/bin/node",
+      "/Users/andy/codemodsquad/asyncify/node_modules/.bin/mocha",
+      "test/configure.js",
+      "src/**/*.spec.ts",
+      "test/**/*.spec.ts",
+      "--watch",
+      "--watch-extensions",
+      "js,ts",
+      "--grep",
+      "moreScope"
+    ],
+    "nodejsVersion": "v12.12.0",
+    "wordSize": 64,
+    "arch": "x64",
+    "platform": "darwin",
+    "componentVersions": {
+      "node": "12.12.0",
+      "v8": "7.7.299.13-node.12",
+      "uv": "1.32.0",
+      "zlib": "1.2.11",
+      "brotli": "1.0.7",
+      "ares": "1.15.0",
+      "modules": "72",
+      "nghttp2": "1.39.2",
+      "napi": "5",
+      "llhttp": "1.1.4",
+      "http_parser": "2.8.0",
+      "openssl": "1.1.1d",
+      "cldr": "35.1",
+      "icu": "64.2",
+      "tz": "2019a",
+      "unicode": "12.1"
+    },
+    "release": {
+      "name": "node",
+      "headersUrl": "https://nodejs.org/download/release/v12.12.0/node-v12.12.0-headers.tar.gz",
+      "sourceUrl": "https://nodejs.org/download/release/v12.12.0/node-v12.12.0.tar.gz"
+    },
+    "osName": "Darwin",
+    "osRelease": "19.3.0",
+    "osVersion": "Darwin Kernel Version 19.3.0: Thu Jan  9 20:58:23 PST 2020; root:xnu-6153.81.5~1/RELEASE_X86_64",
+    "osMachine": "x86_64",
+    "cpus": [
+      {
+        "model": "Intel(R) Core(TM) i7-4870HQ CPU @ 2.50GHz",
+        "speed": 2500,
+        "user": 301434390,
+        "nice": 0,
+        "sys": 288733650,
+        "idle": 1026584320,
+        "irq": 0
+      },
+      {
+        "model": "Intel(R) Core(TM) i7-4870HQ CPU @ 2.50GHz",
+        "speed": 2500,
+        "user": 55894060,
+        "nice": 0,
+        "sys": 95987040,
+        "idle": 1464635100,
+        "irq": 0
+      },
+      {
+        "model": "Intel(R) Core(TM) i7-4870HQ CPU @ 2.50GHz",
+        "speed": 2500,
+        "user": 274350650,
+        "nice": 0,
+        "sys": 243503190,
+        "idle": 1098681670,
+        "irq": 0
+      },
+      {
+        "model": "Intel(R) Core(TM) i7-4870HQ CPU @ 2.50GHz",
+        "speed": 2500,
+        "user": 49045080,
+        "nice": 0,
+        "sys": 68481240,
+        "idle": 1498986410,
+        "irq": 0
+      },
+      {
+        "model": "Intel(R) Core(TM) i7-4870HQ CPU @ 2.50GHz",
+        "speed": 2500,
+        "user": 253440920,
+        "nice": 0,
+        "sys": 212652900,
+        "idle": 1150433430,
+        "irq": 0
+      },
+      {
+        "model": "Intel(R) Core(TM) i7-4870HQ CPU @ 2.50GHz",
+        "speed": 2500,
+        "user": 46727560,
+        "nice": 0,
+        "sys": 57822170,
+        "idle": 1511959530,
+        "irq": 0
+      },
+      {
+        "model": "Intel(R) Core(TM) i7-4870HQ CPU @ 2.50GHz",
+        "speed": 2500,
+        "user": 238586420,
+        "nice": 0,
+        "sys": 189069930,
+        "idle": 1188863390,
+        "irq": 0
+      },
+      {
+        "model": "Intel(R) Core(TM) i7-4870HQ CPU @ 2.50GHz",
+        "speed": 2500,
+        "user": 45292190,
+        "nice": 0,
+        "sys": 50039450,
+        "idle": 1521174150,
+        "irq": 0
+      }
+    ],
+    "networkInterfaces": [
+      {
+        "name": "lo0",
+        "internal": true,
+        "mac": "00:00:00:00:00:00",
+        "address": "127.0.0.1",
+        "netmask": "255.0.0.0",
+        "family": "IPv4"
+      },
+      {
+        "name": "lo0",
+        "internal": true,
+        "mac": "00:00:00:00:00:00",
+        "address": "::1",
+        "netmask": "ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff",
+        "family": "IPv6",
+        "scopeid": 0
+      },
+      {
+        "name": "lo0",
+        "internal": true,
+        "mac": "00:00:00:00:00:00",
+        "address": "fe80::1",
+        "netmask": "ffff:ffff:ffff:ffff::",
+        "family": "IPv6",
+        "scopeid": 1
+      },
+      {
+        "name": "en0",
+        "internal": false,
+        "mac": "6c:40:08:ad:a2:a8",
+        "address": "192.168.1.124",
+        "netmask": "255.255.255.0",
+        "family": "IPv4"
+      },
+      {
+        "name": "awdl0",
+        "internal": false,
+        "mac": "76:05:a7:ae:e4:8a",
+        "address": "fe80::7405:a7ff:feae:e48a",
+        "netmask": "ffff:ffff:ffff:ffff::",
+        "family": "IPv6",
+        "scopeid": 7
+      },
+      {
+        "name": "llw0",
+        "internal": false,
+        "mac": "76:05:a7:ae:e4:8a",
+        "address": "fe80::7405:a7ff:feae:e48a",
+        "netmask": "ffff:ffff:ffff:ffff::",
+        "family": "IPv6",
+        "scopeid": 8
+      },
+      {
+        "name": "utun0",
+        "internal": false,
+        "mac": "00:00:00:00:00:00",
+        "address": "fe80::4bcb:b93b:40f4:f711",
+        "netmask": "ffff:ffff:ffff:ffff::",
+        "family": "IPv6",
+        "scopeid": 11
+      },
+      {
+        "name": "utun1",
+        "internal": false,
+        "mac": "00:00:00:00:00:00",
+        "address": "fe80::4e7e:1907:cd48:e58e",
+        "netmask": "ffff:ffff:ffff:ffff::",
+        "family": "IPv6",
+        "scopeid": 12
+      },
+      {
+        "name": "en4",
+        "internal": false,
+        "mac": "24:1b:7a:f7:9c:11",
+        "address": "192.168.1.186",
+        "netmask": "255.255.255.0",
+        "family": "IPv4"
+      }
+    ],
+    "host": "Andys-MacBook-Pro-2.local"
+  },
+  "javascriptStack": {
+    "message": "No stack.",
+    "stack": [
+      "Unavailable."
+    ]
+  },
+  "nativeStack": [
+    {
+      "pc": "0x00000001001515eb",
+      "symbol": "report::TriggerNodeReport(v8::Isolate*, node::Environment*, char const*, char const*, std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&, v8::Local<v8::String>) [/usr/local/Cellar/node/12.12.0/bin/node]"
+    },
+    {
+      "pc": "0x0000000100082067",
+      "symbol": "node::OnFatalError(char const*, char const*) [/usr/local/Cellar/node/12.12.0/bin/node]"
+    },
+    {
+      "pc": "0x000000010017461d",
+      "symbol": "v8::Utils::ReportOOMFailure(v8::internal::Isolate*, char const*, bool) [/usr/local/Cellar/node/12.12.0/bin/node]"
+    },
+    {
+      "pc": "0x00000001001745c7",
+      "symbol": "v8::internal::V8::FatalProcessOutOfMemory(v8::internal::Isolate*, char const*, bool) [/usr/local/Cellar/node/12.12.0/bin/node]"
+    },
+    {
+      "pc": "0x000000010028a569",
+      "symbol": "v8::internal::Heap::FatalProcessOutOfMemory(char const*) [/usr/local/Cellar/node/12.12.0/bin/node]"
+    },
+    {
+      "pc": "0x000000010028b8ee",
+      "symbol": "v8::internal::Heap::MarkCompactPrologue() [/usr/local/Cellar/node/12.12.0/bin/node]"
+    },
+    {
+      "pc": "0x00000001002894eb",
+      "symbol": "v8::internal::Heap::PerformGarbageCollection(v8::internal::GarbageCollector, v8::GCCallbackFlags) [/usr/local/Cellar/node/12.12.0/bin/node]"
+    },
+    {
+      "pc": "0x0000000100287f93",
+      "symbol": "v8::internal::Heap::CollectGarbage(v8::internal::AllocationSpace, v8::internal::GarbageCollectionReason, v8::GCCallbackFlags) [/usr/local/Cellar/node/12.12.0/bin/node]"
+    },
+    {
+      "pc": "0x000000010028f6da",
+      "symbol": "v8::internal::Heap::AllocateRawWithLightRetry(int, v8::internal::AllocationType, v8::internal::AllocationAlignment) [/usr/local/Cellar/node/12.12.0/bin/node]"
+    },
+    {
+      "pc": "0x000000010028fbd0",
+      "symbol": "v8::internal::Heap::AllocateRawWithRetryOrFail(int, v8::internal::AllocationType, v8::internal::AllocationAlignment) [/usr/local/Cellar/node/12.12.0/bin/node]"
+    },
+    {
+      "pc": "0x000000010026d8c6",
+      "symbol": "v8::internal::Factory::NewFillerObject(int, bool, v8::internal::AllocationType) [/usr/local/Cellar/node/12.12.0/bin/node]"
+    },
+    {
+      "pc": "0x00000001004bc4ee",
+      "symbol": "v8::internal::Runtime_AllocateInYoungGeneration(int, unsigned long*, v8::internal::Isolate*) [/usr/local/Cellar/node/12.12.0/bin/node]"
+    },
+    {
+      "pc": "0x000000010072e699",
+      "symbol": "Builtins_CEntry_Return1_DontSaveFPRegs_ArgvOnStack_NoBuiltinExit [/usr/local/Cellar/node/12.12.0/bin/node]"
+    },
+    {
+      "pc": "0x00001a446e7f11ba",
+      "symbol": ""
+    },
+    {
+      "pc": "0x00000001006aece4",
+      "symbol": "Builtins_InterpreterEntryTrampoline [/usr/local/Cellar/node/12.12.0/bin/node]"
+    },
+    {
+      "pc": "0x00001a446e7eb8ad",
+      "symbol": ""
+    }
+  ],
+  "javascriptHeap": {
+    "totalMemory": 2167959552,
+    "totalCommittedMemory": 2165732008,
+    "usedMemory": 1965414704,
+    "availableMemory": 63562880,
+    "memoryLimit": 2197815296,
+    "heapSpaces": {
+      "read_only_space": {
+        "memorySize": 262144,
+        "committedMemory": 32568,
+        "capacity": 261872,
+        "used": 32296,
+        "available": 229576
+      },
+      "new_space": {
+        "memorySize": 33554432,
+        "committedMemory": 33030576,
+        "capacity": 16759808,
+        "used": 293840,
+        "available": 16465968
+      },
+      "old_space": {
+        "memorySize": 2124263424,
+        "committedMemory": 2123086320,
+        "capacity": 1956713408,
+        "used": 1956461624,
+        "available": 251784
+      },
+      "code_space": {
+        "memorySize": 950272,
+        "committedMemory": 894144,
+        "capacity": 685024,
+        "used": 685024,
+        "available": 0
+      },
+      "map_space": {
+        "memorySize": 2101248,
+        "committedMemory": 1860368,
+        "capacity": 1202720,
+        "used": 1202720,
+        "available": 0
+      },
+      "large_object_space": {
+        "memorySize": 6778880,
+        "committedMemory": 6778880,
+        "capacity": 6735648,
+        "used": 6735648,
+        "available": 0
+      },
+      "code_large_object_space": {
+        "memorySize": 49152,
+        "committedMemory": 49152,
+        "capacity": 3552,
+        "used": 3552,
+        "available": 0
+      },
+      "new_large_object_space": {
+        "memorySize": 0,
+        "committedMemory": 0,
+        "capacity": 16759808,
+        "used": 0,
+        "available": 16759808
+      }
+    }
+  },
+  "resourceUsage": {
+    "userCpuSeconds": 407.069,
+    "kernelCpuSeconds": 7.80643,
+    "cpuConsumptionPercent": 76.1239,
+    "maxRss": 2137895469056,
+    "pageFaults": {
+      "IORequired": 10,
+      "IONotRequired": 623828
+    },
+    "fsActivity": {
+      "reads": 0,
+      "writes": 0
+    }
+  },
+  "libuv": [
+  ],
+  "environmentVariables": {
+    "npm_package_devDependencies__babel_plugin_proposal_nullish_coalescing_operator": "^7.4.4",
+    "npm_package_devDependencies_chai_subset": "^1.6.0",
+    "npm_package_devDependencies_lint_staged": "^8.0.4",
+    "npm_package_devDependencies_prettier": "^1.15.2",
+    "npm_package_scripts_prettier": "prettier --write .babelrc.js *.json *.md *.ts '{src,test}/**/*.{js,ts}'",
+    "npm_package_nyc_instrument": "false",
+    "npm_package_devDependencies__types_babel__traverse": "^7.0.10",
+    "TERM_PROGRAM": "vscode",
+    "NODE": "/usr/local/Cellar/node/12.12.0/bin/node",
+    "npm_config_version_git_tag": "true",
+    "npm_package_homepage": "https://github.com/codemodsquad/asyncify#readme",
+    "npm_package_devDependencies_typescript": "^3.7.2",
+    "NVM_CD_FLAGS": "",
+    "INIT_CWD": "/Users/andy/codemodsquad/asyncify",
+    "npm_package_scripts_prettier_check": "prettier --list-different .babelrc.js *.json *.md *.ts '{src,test}/**/*.{js,ts}'",
+    "npm_package_devDependencies__babel_plugin_proposal_export_namespace_from": "^7.0.0",
+    "npm_package_devDependencies_mocha": "^6.2.1",
+    "TERM": "xterm-256color",
+    "SHELL": "/bin/bash",
+    "npm_package_nyc_exclude_0": "src/**/*.spec.ts",
+    "npm_package_devDependencies_babel_plugin_istanbul": "^5.1.0",
+    "npm_package_devDependencies_rimraf": "^2.6.0",
+    "npm_package_scripts_tsc": "tsc --noEmit",
+    "npm_package_config_mocha": "test/configure.js 'src/**/*.spec.ts' 'test/**/*.spec.ts'",
+    "TMPDIR": "/var/folders/f3/zmhpprp15zxfd1s3fpp3prm80000gn/T/",
+    "npm_config_email": "jedwards@fastmail.com",
+    "npm_config_init_license": "MIT",
+    "npm_package_scripts_lint": "eslint $npm_package_config_lint",
+    "npm_package_devDependencies__babel_preset_typescript": "^7.7.2",
+    "npm_package_dependencies_invalidate_require_cache": "^1.0.0",
+    "npm_package_devDependencies__types_chai": "^4.2.0",
+    "TERM_PROGRAM_VERSION": "1.43.2",
+    "npm_package_husky_hooks_pre_push": "npm test",
+    "npm_package_devDependencies_copy": "^0.3.2",
+    "npm_package_scripts_prepublishOnly": "npm run clean && npm run prettier:check && npm run lint && npm test && npm run build",
+    "npm_package_config_commitizen_path": "cz-conventional-changelog",
+    "npm_package_devDependencies__babel_plugin_syntax_dynamic_import": "^7.0.0",
+    "npm_package_devDependencies__types_mocha": "^5.2.7",
+    "npm_config_registry": "https://registry.yarnpkg.com",
+    "npm_package_sideEffects": "false",
+    "npm_package_devDependencies_print_highlighted_ast": "^1.0.0",
+    "npm_package_repository_url": "https://github.com/codemodsquad/asyncify.git",
+    "npm_package_nyc_require_0": "@babel/register",
+    "npm_package_devDependencies__types_babel__generator": "^7.6.1",
+    "npm_package_readmeFilename": "README.md",
+    "npm_config_python": "/usr/bin/python",
+    "npm_package_description": "transforms promise chains into async/await",
+    "npm_package_devDependencies__babel_plugin_proposal_object_rest_spread": "^7.0.0",
+    "npm_package_devDependencies__babel_plugin_transform_runtime": "^7.1.0",
+    "NVM_DIR": "/Users/andy/.nvm",
+    "USER": "andy",
+    "npm_package_license": "MIT",
+    "npm_package_devDependencies_require_glob": "^3.2.0",
+    "npm_package_devDependencies_semantic_release": "^15.1.4",
+    "npm_package_devDependencies__types_babel__template": "^7.0.2",
+    "npm_package_scripts_build_js": "babel src --out-dir es --extensions \".ts\" --source-maps inline && cross-env BABEL_ENV=es5 babel src --out-dir . --extensions \".ts\"",
+    "npm_package_scripts_lint_watch": "esw --watch $npm_package_config_lint",
+    "npm_package_devDependencies_codecov": "^3.1.0",
+    "SSH_AUTH_SOCK": "/private/tmp/com.apple.launchd.9hH001IJDf/Listeners",
+    "npm_package_devDependencies__types_find_root": "^1.1.1",
+    "npm_package_devDependencies_eslint": "^5.9.0",
+    "__CF_USER_TEXT_ENCODING": "0x1F5:0x0:0x0",
+    "npm_package_husky_hooks_pre_commit": "lint-staged && npm run lint && npm run tsc",
+    "npm_package_prettier_trailingComma": "es5",
+    "npm_package_dependencies_jscodeshift_paths_in_range": "^1.0.0",
+    "npm_execpath": "/usr/local/Cellar/yarn/1.19.1/libexec/bin/yarn.js",
+    "npm_package_scripts_test_debug": "cross-env NODE_ENV=test BABEL_ENV=test mocha --inspect-brk $npm_package_config_mocha",
+    "npm_package_author_name": "Andy Edwards",
+    "npm_package_dependencies_jscodeshift_choose_parser": "^1.0.1",
+    "npm_package_renovate_automerge": "true",
+    "npm_package_scripts_build_types": "tsc --emitDeclarationOnly",
+    "npm_package_lint_staged____js_ts_json_css_md__1": "git add",
+    "npm_package_scripts_lint_fix": "eslint $npm_package_config_lint",
+    "npm_package_lint_staged____js_ts_json_css_md__0": "prettier --write",
+    "npm_package_devDependencies_promisify_child_process": "^3.1.4",
+    "npm_package_dependencies__babel_runtime": "^7.1.5",
+    "npm_package_dependencies__babel_template": "^7.8.6",
+    "npm_package_renovate_major_automerge": "false",
+    "npm_config_argv": "{\"remain\":[],\"cooked\":[\"run\",\"test:watch\"],\"original\":[\"test:watch\",\"--grep\",\"moreScope\"]}",
+    "PATH": "/var/folders/f3/zmhpprp15zxfd1s3fpp3prm80000gn/T/yarn--1586668857371-0.14938886581358712:/Users/andy/codemodsquad/asyncify/node_modules/.bin:/Users/andy/.config/yarn/link/node_modules/.bin:/usr/local/Cellar/node/12.12.0/libexec/lib/node_modules/npm/bin/node-gyp-bin:/usr/local/Cellar/node/12.12.0/lib/node_modules/npm/bin/node-gyp-bin:/usr/local/Cellar/node/12.12.0/bin/node_modules/npm/bin/node-gyp-bin:/Library/Frameworks/Python.framework/Versions/2.7/bin:/Library/Frameworks/Python.framework/Versions/3.5/bin:/Users/andy/bin:/usr/local/bin:/usr/local/opt/subversion/libexec:/opt/apache-maven-3.3.9/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/Library/Frameworks/Python.framework/Versions/2.7/bin:/Library/Frameworks/Python.framework/Versions/3.5/bin:/Users/andy/bin:/usr/local/opt/subversion/libexec:/opt/apache-maven-3.3.9/bin:./node_modules/.bin:./node_modules/.bin",
+    "npm_package_dependencies__babel_core": "^7.1.6",
+    "_": "/Users/andy/codemodsquad/asyncify/node_modules/.bin/cross-env",
+    "npm_package_keywords_4": "then",
+    "npm_package_prettier_singleQuote": "true",
+    "npm_package_keywords_5": "thenable",
+    "PWD": "/Users/andy/codemodsquad/asyncify",
+    "npm_package_scripts_test_watch": "cross-env NODE_ENV=test BABEL_ENV=test mocha $npm_package_config_mocha --watch --watch-extensions js,ts",
+    "npm_package_keywords_6": "codemod",
+    "npm_package_bugs_url": "https://github.com/codemodsquad/asyncify/issues",
+    "npm_package_devDependencies_istanbul": "^0.4.5",
+    "JAVA_HOME": "/Library/Java/JavaVirtualMachines/jdk1.8.0_181.jdk/Contents/Home",
+    "npm_package_keywords_7": "refactoring",
+    "npm_package_devDependencies_chai": "^4.2.0",
+    "npm_lifecycle_event": "test:watch",
+    "EDITOR": "vi",
+    "npm_package_name": "@codemodsquad/asyncify",
+    "npm_package_repository_type": "git",
+    "npm_package_keywords_0": "async",
+    "LANG": "en_US.UTF-8",
+    "npm_package_keywords_1": "await",
+    "npm_package_devDependencies__babel_preset_env": "^7.1.6",
+    "npm_config_version_commit_hooks": "true",
+    "npm_package_scripts_build": "npm run clean && npm run build:types && npm run build:js",
+    "npm_package_keywords_2": "promise",
+    "npm_package_devDependencies__babel_cli": "^7.1.5",
+    "npm_package_devDependencies_jscodeshift": "^0.7.0",
+    "npm_config_username": "jedwards1211",
+    "npm_package_keywords_3": "chain",
+    "XPC_FLAGS": "0x0",
+    "NODE_ENV": "test",
+    "npm_config_bin_links": "true",
+    "npm_package_nyc_include_0": "src/**/*.ts",
+    "npm_package_devDependencies__jedwards1211_commitlint_config": "^1.0.0",
+    "npm_package_devDependencies_eslint_config_prettier": "^3.3.0",
+    "npm_package_version": "0.0.0-development",
+    "XPC_SERVICE_NAME": "0",
+    "npm_package_scripts_example": "node scripts/example.babel.js",
+    "npm_package_devDependencies__babel_plugin_proposal_optional_chaining": "^7.6.0",
+    "npm_package_devDependencies__types_jscodeshift": "^0.6.3",
+    "SHLVL": "3",
+    "HOME": "/Users/andy",
+    "npm_package_scripts_test": "cross-env NODE_ENV=test BABEL_ENV=es5 mocha $npm_package_config_mocha && cross-env NODE_ENV=test BABEL_ENV=coverage nyc --reporter=lcov --reporter=text mocha $npm_package_config_mocha",
+    "npm_package_devDependencies_nyc": "^13.1.0",
+    "npm_config_strict_ssl": "true",
+    "npm_config_save_prefix": "^",
+    "npm_package_scripts_codecov": "nyc report --reporter=text-lcov > coverage.lcov; codecov",
+    "npm_package_devDependencies__jedwards1211_eslint_config_typescript": "^1.0.0",
+    "npm_package_devDependencies_eslint_watch": "^4.0.2",
+    "npm_package_devDependencies_prettier_eslint": "^8.8.2",
+    "BABEL_ENV": "test",
+    "npm_config_version_git_message": "v%s",
+    "npm_package_husky_hooks_commit_msg": "commitlint -e $GIT_PARAMS",
+    "npm_package_devDependencies__commitlint_cli": "^6.0.2",
+    "npm_package_devDependencies_babel_eslint": "^10.0.1",
+    "npm_package_devDependencies_cross_env": "^5.2.0",
+    "npm_package_devDependencies_husky": "^1.1.4",
+    "npm_package_renovate_extends_6": ":preserveSemverRanges",
+    "npm_package_prettier_semi": "false",
+    "npm_package_renovate_extends_7": ":semanticPrefixFixDepsChoreOthers",
+    "NPM_CONFIG_PYTHON": "/usr/bin/python",
+    "npm_package_commitlint_extends_0": "@jedwards1211/commitlint-config",
+    "npm_package_renovate_extends_4": ":renovatePrefix",
+    "npm_package_nyc_sourceMap": "false",
+    "npm_package_devDependencies__babel_register": "^7.0.0",
+    "npm_package_dependencies_find_root": "^1.1.0",
+    "npm_package_renovate_extends_5": ":updateNotScheduled",
+    "YARN_WRAP_OUTPUT": "false",
+    "LOGNAME": "andy",
+    "npm_package_devDependencies__babel_plugin_proposal_export_default_from": "^7.0.0",
+    "npm_package_renovate_extends_2": ":ignoreUnstable",
+    "npm_lifecycle_script": "cross-env NODE_ENV=test BABEL_ENV=test mocha $npm_package_config_mocha --watch --watch-extensions js,ts",
+    "PREFIX": "/usr/local",
+    "npm_package_config_lint": "--cache --ext .js,.ts src test",
+    "npm_package_devDependencies__babel_plugin_proposal_class_properties": "^7.1.0",
+    "npm_package_renovate_extends_3": ":prImmediately",
+    "npm_package_devDependencies__types_chalk": "^2.2.0",
+    "npm_package_renovate_extends_0": ":separateMajorReleases",
+    "npm_package_renovate_extends_1": ":combinePatchMinorReleases",
+    "npm_config_user_agent": "yarn/1.19.1 npm/? node/v12.12.0 darwin x64",
+    "npm_config_ignore_scripts": "",
+    "npm_config_version_git_sign": "",
+    "npm_package_scripts_tsc_watch": "npm run tsc -- --watch",
+    "npm_package_devDependencies__types_node": "^13.7.4",
+    "npm_package_devDependencies_chalk": "^4.0.0",
+    "npm_package_scripts_build_watch": "babel ./src ./test --out-dir dist/ --extensions \".ts\" --source-maps inline --watch",
+    "npm_package_dependencies__babel_types": "^7.9.5",
+    "npm_package_scripts_open_coverage": "open coverage/lcov-report/index.html",
+    "npm_config_ignore_optional": "",
+    "npm_config_init_version": "1.0.0",
+    "npm_package_scripts_semantic_release": "semantic-release",
+    "npm_package_devDependencies__types_prettier": "^1.19.0",
+    "npm_package_scripts_clean": "rimraf es lib $(cd src; ls) *.js *.d.ts",
+    "npm_package_devDependencies__commitlint_config_conventional": "^6.0.2",
+    "npm_package_dependencies__babel_traverse": "^7.9.5",
+    "npm_package_renovate_extends_8": ":automergeDisabled",
+    "npm_config_version_tag_prefix": "v",
+    "npm_package_devDependencies__types_chai_subset": "^1.3.3",
+    "npm_package_devDependencies_pkg_conf": "^3.1.0",
+    "npm_package_renovate_extends_9": "group:monorepos",
+    "npm_node_execpath": "/usr/local/Cellar/node/12.12.0/bin/node",
+    "COLORTERM": "truecolor"
+  },
+  "userLimits": {
+    "core_file_size_blocks": {
+      "soft": 0,
+      "hard": "unlimited"
+    },
+    "data_seg_size_kbytes": {
+      "soft": "unlimited",
+      "hard": "unlimited"
+    },
+    "file_size_blocks": {
+      "soft": "unlimited",
+      "hard": "unlimited"
+    },
+    "max_locked_memory_bytes": {
+      "soft": "unlimited",
+      "hard": "unlimited"
+    },
+    "max_memory_size_kbytes": {
+      "soft": "unlimited",
+      "hard": "unlimited"
+    },
+    "open_files": {
+      "soft": 24576,
+      "hard": "unlimited"
+    },
+    "stack_size_bytes": {
+      "soft": 8388608,
+      "hard": 67104768
+    },
+    "cpu_time_seconds": {
+      "soft": "unlimited",
+      "hard": "unlimited"
+    },
+    "max_user_processes": {
+      "soft": 2784,
+      "hard": 4176
+    },
+    "virtual_memory_kbytes": {
+      "soft": "unlimited",
+      "hard": "unlimited"
+    }
+  },
+  "sharedObjects": [
+    "/usr/local/Cellar/node/12.12.0/bin/node",
+    "/usr/local/opt/icu4c/lib/libicui18n.64.dylib",
+    "/usr/local/opt/icu4c/lib/libicuuc.64.dylib",
+    "/usr/local/opt/icu4c/lib/libicudata.64.dylib",
+    "/System/Library/Frameworks/CoreFoundation.framework/Versions/A/CoreFoundation",
+    "/usr/lib/libSystem.B.dylib",
+    "/usr/lib/libc++.1.dylib",
+    "/usr/lib/system/libcache.dylib",
+    "/usr/lib/system/libcommonCrypto.dylib",
+    "/usr/lib/system/libcompiler_rt.dylib",
+    "/usr/lib/system/libcopyfile.dylib",
+    "/usr/lib/system/libcorecrypto.dylib",
+    "/usr/lib/system/libdispatch.dylib",
+    "/usr/lib/system/libdyld.dylib",
+    "/usr/lib/system/libkeymgr.dylib",
+    "/usr/lib/system/liblaunch.dylib",
+    "/usr/lib/system/libmacho.dylib",
+    "/usr/lib/system/libquarantine.dylib",
+    "/usr/lib/system/libremovefile.dylib",
+    "/usr/lib/system/libsystem_asl.dylib",
+    "/usr/lib/system/libsystem_blocks.dylib",
+    "/usr/lib/system/libsystem_c.dylib",
+    "/usr/lib/system/libsystem_configuration.dylib",
+    "/usr/lib/system/libsystem_coreservices.dylib",
+    "/usr/lib/system/libsystem_darwin.dylib",
+    "/usr/lib/system/libsystem_dnssd.dylib",
+    "/usr/lib/system/libsystem_featureflags.dylib",
+    "/usr/lib/system/libsystem_info.dylib",
+    "/usr/lib/system/libsystem_m.dylib",
+    "/usr/lib/system/libsystem_malloc.dylib",
+    "/usr/lib/system/libsystem_networkextension.dylib",
+    "/usr/lib/system/libsystem_notify.dylib",
+    "/usr/lib/system/libsystem_sandbox.dylib",
+    "/usr/lib/system/libsystem_secinit.dylib",
+    "/usr/lib/system/libsystem_kernel.dylib",
+    "/usr/lib/system/libsystem_platform.dylib",
+    "/usr/lib/system/libsystem_pthread.dylib",
+    "/usr/lib/system/libsystem_symptoms.dylib",
+    "/usr/lib/system/libsystem_trace.dylib",
+    "/usr/lib/system/libunwind.dylib",
+    "/usr/lib/system/libxpc.dylib",
+    "/usr/lib/libobjc.A.dylib",
+    "/usr/lib/libc++abi.dylib",
+    "/usr/lib/libfakelink.dylib",
+    "/usr/lib/libDiagnosticMessagesClient.dylib",
+    "/usr/lib/libicucore.A.dylib",
+    "/usr/lib/libz.1.dylib"
+  ]
+}
