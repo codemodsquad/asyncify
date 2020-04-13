@@ -439,6 +439,27 @@ export function unwindThen(
   return link.replaceWith(t.callExpression(handler.node, [preceeding])) as any
 }
 
+function mergeCatchIntoTryFinally<T extends t.Node>(
+  link: NodePath<T>,
+  tryStatement: NodePath<t.TryStatement>
+): NodePath | NodePath[] | null {
+  let parent = link.parentPath
+  if (!parent.isAwaitExpression()) return null
+  parent = parent.parentPath
+  if (!parent.isStatement()) return null
+  const statement = parent
+  parent = parent.parentPath
+  if (!parent.isBlockStatement()) return null
+  const body = (parent as NodePath<t.BlockStatement>).node.body
+  if (body[body.length - 1] !== statement.node) return null
+  parent = parent.parentPath
+  if (!parent.isTryStatement() || parent.node.handler) return null
+  const { handler, block } = tryStatement.node
+  if (!handler || !block || block.type !== 'BlockStatement') return null
+  ;(parent as NodePath<t.TryStatement>).get('handler').replaceWith(handler)
+  return statement.replaceWithMultiple(block.body) as any
+}
+
 export function unwindCatch(
   handler: NodePath<t.Expression>
 ): NodePath | NodePath[] {
@@ -470,21 +491,26 @@ export function unwindCatch(
   if (input) renameBoundIdentifiers(input, link.scope)
   const inputNode = input?.node
   if (input) input.remove()
+  const catchClause = t.catchClause(
+    inputNode || unboundIdentifier(handler, 'err'),
+    convertBodyToBlockStatement(handlerFunction).node
+  )
+
   handlerFunction
     .get('body')
     .replaceWith(
       t.blockStatement([
         t.tryStatement(
           t.blockStatement([t.returnStatement(preceeding)]),
-          t.catchClause(
-            inputNode || unboundIdentifier(handler, 'err'),
-            convertBodyToBlockStatement(handlerFunction).node
-          )
+          catchClause
         ),
       ])
     )
-  ;(handlerFunction.get('body').scope as any).crawl()
-  return replaceLink(link, handlerFunction.get('body')) as any
+  const body = handlerFunction.get('body') as NodePath<t.BlockStatement>
+  ;(body.scope as any).crawl()
+  const tryStatement = body.get('body')[0] as NodePath<t.TryStatement>
+  const merged = mergeCatchIntoTryFinally(link, tryStatement)
+  return merged || (replaceLink(link, body) as any)
 }
 
 export function unwindFinally(
@@ -517,7 +543,7 @@ export function unwindFinally(
           null,
           replaceReturnStatements(
             convertBodyToBlockStatement(handlerFunction),
-            awaitedIfNecessary
+            awaitedIfNecessary as any
           ).node
         ),
       ])
