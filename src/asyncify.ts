@@ -157,7 +157,7 @@ function renameBoundIdentifiers<T extends t.Node>(
   destScope: Scope
 ): void {
   function isBound(name: string): boolean {
-    return destScope.hasBinding(name)
+    return parent.scope.hasBinding(name) || destScope.hasBinding(name)
   }
 
   function rename(path: NodePath<t.Identifier>): void {
@@ -170,7 +170,7 @@ function renameBoundIdentifiers<T extends t.Node>(
   function mustRename(path: NodePath<t.Identifier>): boolean {
     const { name } = path.node
     return (
-      isBound(name) &&
+      destScope.hasBinding(name) &&
       path.isBindingIdentifier() &&
       ((destScope.hasBinding(name) &&
         parent.scope.getBindingIdentifier(name) === path.node) ||
@@ -630,7 +630,7 @@ export function ensureAsync(path: NodePath<t.Function>): void {
   path.get('body').traverse({
     ReturnStatement(path: NodePath<t.ReturnStatement>) {
       const argument = path.get('argument')
-      if (argument && !argument.isAwaitExpression()) {
+      if (argument.node && !argument.isAwaitExpression()) {
         argument.replaceWith(
           awaitedIfNecessary((argument as NodePath<t.Expression>).node)
         )
