@@ -305,8 +305,14 @@ function findOnlyFinalReturn(
 
 function replaceLink<T extends t.Expression | t.BlockStatement>(
   link: NodePath<t.CallExpression>,
-  replacement: NodePath<T>
+  replacement: t.Expression | NodePath<T>
 ): NodePath | NodePath[] {
+  if (!(replacement instanceof NodePath)) {
+    const { parentPath } = link
+    return (parentPath.isAwaitExpression() ? parentPath : link).replaceWith(
+      awaitedIfNecessary(replacement)
+    ) as any
+  }
   if (replacement.isBlockStatement()) {
     renameBoundIdentifiers(replacement, link.scope)
     const onlyFinalReturn = findOnlyFinalReturn(replacement)
@@ -410,7 +416,7 @@ export function unwindThen(
   const preceeding = awaitedIfNecessary(getPreceedingLink(link).node)
 
   if (isNullish(handler.node)) {
-    return link.replaceWith(preceeding) as any
+    return replaceLink(link, preceeding)
   }
 
   if (handler.isFunction()) {
@@ -436,7 +442,7 @@ export function unwindThen(
     }
     return replaceLink(link, handlerFunction.get('body')) as any
   }
-  return link.replaceWith(t.callExpression(handler.node, [preceeding])) as any
+  return replaceLink(link, t.callExpression(handler.node, [preceeding])) as any
 }
 
 function mergeCatchIntoTryFinally<T extends t.Node>(
@@ -474,7 +480,7 @@ export function unwindCatch(
   }
 
   if (isNullish(handler.node)) {
-    return link.replaceWith(preceeding) as any
+    return replaceLink(link, preceeding)
   }
 
   if (!handler.isFunction()) {
@@ -520,7 +526,7 @@ export function unwindFinally(
   const preceeding = awaitedIfNecessary(getPreceedingLink(link).node)
 
   if (isNullish(handler.node)) {
-    return link.replaceWith(preceeding) as any
+    return replaceLink(link, preceeding)
   }
 
   if (!handler.isFunction()) {
@@ -530,10 +536,6 @@ export function unwindFinally(
     ) as any
   }
   const handlerFunction = handler as NodePath<t.Function>
-  const input = handlerFunction.get('params')[0]
-  if (input) renameBoundIdentifiers(input, link.scope)
-  const inputNode = input?.node
-  if (input) input.remove()
   handlerFunction
     .get('body')
     .replaceWith(
@@ -610,12 +612,12 @@ export function unwindPromiseChains(path: NodePath<t.Function>): void {
         chains.push(argument)
       }
     },
-    ReturnStatement(path: NodePath<t.ReturnStatement>) {
-      const argument = path.get('argument')
-      if (argument.isCallExpression() && isPromiseMethodCall(argument.node)) {
-        argument.replaceWith(t.awaitExpression(argument.node))
-      }
-    },
+    // ReturnStatement(path: NodePath<t.ReturnStatement>) {
+    //   const { argument } = path.node
+    //   if (argument && argument.type !== 'AwaitExpression') {
+    //     path.get('argument').replaceWith(awaitedIfNecessary(argument))
+    //   }
+    // },
     Function(path: NodePath<t.Function>) {
       path.skip()
     },
