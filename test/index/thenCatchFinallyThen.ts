@@ -10,7 +10,7 @@ function createUser(args) {
       return failedUser()
     })
     .finally(() => {
-      cleanup()
+      return cleanup()
     })
 }
 `
@@ -18,20 +18,18 @@ function createUser(args) {
 export const options = {}
 
 export const expected = `
-function createUser(args) {
+async function createUser(args) {
   const {username, organizationId} = args
-  let returnValue
   try {
     const user = await Users.create({username})
-    returnValue = await addUserToOrganization(user, organizationId)
+    return await addUserToOrganization(user, organizationId)
   }
   catch (err) {
     console.error(err.stack)
-    returnValue = await failedUser()
+    return await failedUser()
   }
   finally {
     await cleanup()
   }
-  return returnValue
 }
 `

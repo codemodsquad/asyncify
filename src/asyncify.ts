@@ -152,14 +152,6 @@ function parentStatement<T extends t.Node>(
   return parent as NodePath<t.Statement>
 }
 
-function parentFunction<T extends t.Node>(
-  path: NodePath<T>
-): NodePath<t.Function> {
-  const parent = path.findParent((p: NodePath<t.Node>) => p.isFunction())
-  if (!parent) throw new Error('failed to find parent function')
-  return parent as NodePath<t.Function>
-}
-
 function renameBoundIdentifiers<T extends t.Node>(
   parent: NodePath<T>,
   destScope: Scope
@@ -236,7 +228,7 @@ function prependBodyStatement<T extends t.Function, S extends t.Statement>(
 function replaceReturnStatements<T extends t.Statement>(
   path: NodePath<t.BlockStatement>,
   getReplacement: (statement: t.Expression) => T
-): void {
+): NodePath<t.BlockStatement> {
   path.traverse({
     ReturnStatement(path: NodePath<t.ReturnStatement>) {
       const replacement = getReplacement(
@@ -252,6 +244,7 @@ function replaceReturnStatements<T extends t.Statement>(
       path.skip()
     },
   })
+  return path
 }
 
 function isIdentifierDeclarator<T extends t.Node>(path: NodePath<T>): boolean {
@@ -292,24 +285,22 @@ function findReplaceTarget<T extends t.Node>(link: NodePath<T>): NodePath<any> {
   return link
 }
 
-function findOnlyReturn(
+function findOnlyFinalReturn(
   path: NodePath<t.BlockStatement>
 ): NodePath<t.ReturnStatement> | null {
-  let multipleFound = false
-  let result: NodePath<t.ReturnStatement> | null = null
+  let count = 0
   path.traverse({
     ReturnStatement(path: NodePath<t.ReturnStatement>) {
-      if (result) {
-        multipleFound = true
-        path.stop()
-      }
-      result = path
+      if (count++) path.stop()
     },
     Function(path: NodePath<t.Function>) {
       path.skip()
     },
   })
-  return multipleFound ? null : result
+  if (count !== 1) return null
+  const body = path.get('body')
+  const last = body[body.length - 1]
+  return last.isReturnStatement() ? last : null
 }
 
 function replaceLink<T extends t.Expression | t.BlockStatement>(
@@ -318,10 +309,10 @@ function replaceLink<T extends t.Expression | t.BlockStatement>(
 ): NodePath | NodePath[] {
   if (replacement.isBlockStatement()) {
     renameBoundIdentifiers(replacement, link.scope)
-    const onlyReturn = findOnlyReturn(replacement)
-    if (onlyReturn) {
-      const value = onlyReturn.node.argument || t.identifier('undefined')
-      onlyReturn.remove()
+    const onlyFinalReturn = findOnlyFinalReturn(replacement)
+    if (onlyFinalReturn) {
+      const value = onlyFinalReturn.node.argument || t.identifier('undefined')
+      onlyFinalReturn.remove()
       const output = parentStatement(link).insertBefore(
         replacement.node.body
       ) as any
@@ -395,7 +386,7 @@ function getPreceedingLink(
   return callee.get('object') as NodePath<t.Expression>
 }
 
-function hasMutableIdentifiers(path: NodePath): boolean {
+function hasMutableIdentifiers<T extends t.Node>(path: NodePath<T>): boolean {
   let result = false
   path.traverse({
     Identifier(path: NodePath<t.Identifier>) {
@@ -426,7 +417,7 @@ export function unwindThen(
     const handlerFunction = handler as NodePath<t.Function>
     const input = handlerFunction.get('params')[0]
     if (input) renameBoundIdentifiers(input, link.scope)
-    const kind = hasMutableIdentifiers(input) ? 'let' : 'const'
+    const kind = input && hasMutableIdentifiers(input) ? 'let' : 'const'
     const inputNode = input?.node
     if (input) input.remove()
     const [prepended] = prependBodyStatement(
@@ -450,7 +441,90 @@ export function unwindThen(
 
 export function unwindCatch(
   handler: NodePath<t.Expression>
-): NodePath | NodePath[] {}
+): NodePath | NodePath[] {
+  const link = handler.parentPath as NodePath<t.CallExpression>
+  let preceeding
+  if (link.node.arguments.length === 2) {
+    preceeding = t.awaitExpression(
+      t.callExpression(link.node.callee, [link.node.arguments[0]])
+    )
+  } else {
+    preceeding = awaitedIfNecessary(getPreceedingLink(link).node)
+  }
+
+  if (isNullish(handler.node)) {
+    return link.replaceWith(preceeding) as any
+  }
+
+  if (!handler.isFunction()) {
+    const callee = handler.node
+    ;[handler] = handler.replaceWith(
+      t.arrowFunctionExpression(
+        [t.identifier('err')],
+        t.callExpression(callee, [t.identifier('err')])
+      )
+    ) as any
+  }
+  const handlerFunction = handler as NodePath<t.Function>
+  const input = handlerFunction.get('params')[0]
+  if (input) renameBoundIdentifiers(input, link.scope)
+  const inputNode = input?.node
+  if (input) input.remove()
+  handlerFunction
+    .get('body')
+    .replaceWith(
+      t.blockStatement([
+        t.tryStatement(
+          t.blockStatement([t.returnStatement(preceeding)]),
+          t.catchClause(
+            inputNode || unboundIdentifier(handler, 'err'),
+            convertBodyToBlockStatement(handlerFunction).node
+          )
+        ),
+      ])
+    )
+  ;(handlerFunction.get('body').scope as any).crawl()
+  return replaceLink(link, handlerFunction.get('body')) as any
+}
+
+export function unwindFinally(
+  handler: NodePath<t.Expression>
+): NodePath | NodePath[] {
+  const link = handler.parentPath as NodePath<t.CallExpression>
+  const preceeding = awaitedIfNecessary(getPreceedingLink(link).node)
+
+  if (isNullish(handler.node)) {
+    return link.replaceWith(preceeding) as any
+  }
+
+  if (!handler.isFunction()) {
+    const callee = handler.node
+    ;[handler] = handler.replaceWith(
+      t.arrowFunctionExpression([], t.callExpression(callee, []))
+    ) as any
+  }
+  const handlerFunction = handler as NodePath<t.Function>
+  const input = handlerFunction.get('params')[0]
+  if (input) renameBoundIdentifiers(input, link.scope)
+  const inputNode = input?.node
+  if (input) input.remove()
+  handlerFunction
+    .get('body')
+    .replaceWith(
+      t.blockStatement([
+        t.tryStatement(
+          t.blockStatement([t.returnStatement(preceeding)]),
+          null,
+          replaceReturnStatements(
+            convertBodyToBlockStatement(handlerFunction),
+            awaitedIfNecessary
+          ).node
+        ),
+      ])
+    )
+  ;(handlerFunction.get('body').scope as any).crawl()
+  return replaceLink(link, handlerFunction.get('body')) as any
+}
 
 function findAwaitedExpression(
   paths: NodePath | NodePath[]
@@ -465,7 +539,7 @@ function findAwaitedExpression(
   let result: NodePath<t.Expression> | null = null
   paths.traverse({
     AwaitExpression(path: NodePath<t.AwaitExpression>) {
-      result = path.get('argument')
+      if (result == null) result = path.get('argument')
       path.stop()
     },
     Function(path: NodePath<t.Function>) {
@@ -494,7 +568,7 @@ export function unwindPromiseChain(path: NodePath<t.CallExpression>): void {
     } else if (thenHandler) {
       replacements = unwindThen(thenHandler)
     } else if (finallyHandler) {
-      // TODO
+      replacements = unwindFinally(finallyHandler)
     }
     link = replacements ? findAwaitedExpression(replacements) : null
     ;(scope as any).crawl()

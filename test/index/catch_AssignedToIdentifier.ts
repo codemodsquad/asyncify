@@ -3,7 +3,7 @@ async function foo() {
   let bar = 3
   bar = await baz.catch(value => {
     if (value instanceof Blargh) return processBlargh(value)
-    return processOther(value)
+    else return processOther(value)
   })
 }
 `

@@ -3,7 +3,7 @@ async function foo() {
   return process(await baz.then(
     value => {
       if (value instanceof Blargh) return processBlargh(value)
-      return processOther(value)
+      else return processOther(value)
     },
     err => {
       if (err instanceof ConstraintViolation) return processConstraintViolation(err)

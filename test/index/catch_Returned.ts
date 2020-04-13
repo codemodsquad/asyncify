@@ -2,7 +2,7 @@ export const input = `
 function foo() {
   return baz.catch(value => {
     if (value instanceof Blargh) return processBlargh(value)
-    return processOther(value)
+    else return processOther(value)
   })
 }
 `

@@ -2,7 +2,7 @@ export const input = `
 async function foo() {
   return process(await baz.finally(() => {
     if (condition) return processBlargh()
-    return processOther()
+    else return processOther()
   }))
 }
 `
@@ -15,8 +15,8 @@ async function foo() {
   try {
     result = await baz
   } finally {
-    if (condition) result = await processBlargh()
-    else result = await processOther()
+    if (condition) await processBlargh()
+    else await processOther()
   }
   return await process(result)
 }

@@ -3,7 +3,7 @@ async function foo() {
   let bar
   bar = await baz.finally(() => {
     if (condition) return processBlargh()
-    return processOther()
+    else return processOther()
   })
 }
 `
