@@ -122,7 +122,7 @@
     "chai": "^4.2.0",
     "chai-subset": "^1.6.0",
     "chalk": "^4.0.0",
-    "codecov": "^3.1.0",
+    "codecov": "^3.6.5",
     "copy": "^0.3.2",
     "cross-env": "^5.2.0",
     "eslint": "^5.9.0",
