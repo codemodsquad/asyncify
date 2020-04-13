@@ -1,7 +1,9 @@
-import { NodePath } from '@babel/traverse'
+import { NodePath, NodePaths, Scope } from '@babel/traverse'
 import template from '@babel/template'
 import generate from '@babel/generator'
 import * as t from '@babel/types'
+
+const dump = (path: NodePath<any>) => console.log(generate(path.node).code)
 
 function isNullish(node: t.Node): boolean {
   return (
@@ -131,103 +133,14 @@ export function getFinallyHandler(
   return handler && handler.isExpression() ? handler : null
 }
 
-export function getFinalReturn(
-  path: NodePath<t.BlockStatement>
-): NodePath<t.ReturnStatement> | null {
-  const body = path.get('body')
-  const lastStatement = body[body.length - 1]
-  return lastStatement && lastStatement.isReturnStatement()
-    ? lastStatement
-    : null
-}
-
-export function needsConversionToSingleReturn(
-  path: NodePath<t.BlockStatement>
-): boolean | null {
-  let bail = false
-  const branchReturnsStack: Array<boolean> = []
-  let returningBranchFound = false
-  let notReturningBranchFound = false
-  let inLoop = 0
-  const loopHandler = {
-    enter(): void {
-      inLoop++
-    },
-    exit(): void {
-      inLoop--
-    },
-  }
-  path.traverse({
-    ForStatement: loopHandler,
-    ForOfStatement: loopHandler,
-    WhileStatement: loopHandler,
-    DoWhileStatement: loopHandler,
-    enter(path: NodePath<any>) {
-      if (path.isBlockStatement() || path.parentPath.isIfStatement()) {
-        branchReturnsStack.push(false)
-      }
-    },
-    exit(path: NodePath<any>) {
-      if (path.isBlockStatement() || path.parentPath.isIfStatement()) {
-        if (branchReturnsStack.pop()) {
-          returningBranchFound = true
-          if (
-            path.parentPath.isIfStatement() &&
-            !path.parentPath.has('alternate')
-          ) {
-            notReturningBranchFound = true
-          }
-        } else {
-          notReturningBranchFound = true
-        }
-      }
-    },
-    ReturnStatement(path: NodePath<t.ReturnStatement>) {
-      if (inLoop) {
-        bail = true
-        path.stop()
-      }
-      if (branchReturnsStack.length) {
-        branchReturnsStack[branchReturnsStack.length - 1] = true
-      }
-      path.skip()
-    },
-    Function(path: NodePath<t.Function>) {
-      path.skip()
-    },
-  })
-  if (bail) return null
-  return returningBranchFound && notReturningBranchFound
-}
-
-export function convertBodyToSingleReturn(
-  path: NodePath<t.BlockStatement>,
-  outputNeededAs: t.Identifier | null
-): t.Expression | null {
-  const needsConversion = needsConversionToSingleReturn(path)
-  if (needsConversion == null) return null
-  if (needsConversion) {
-    // TODO
-    return null
-  } else {
-    const finalReturn = getFinalReturn(path)
-    if (finalReturn) {
-      const { argument } = finalReturn.node
-      finalReturn.remove()
-      return argument
-    } else {
-      return t.identifier('undefined')
-    }
-  }
-}
-
 function unboundIdentifier<T>(
   path: NodePath<T>,
   prefix?: string
 ): t.Identifier {
   let counter = 0
   let name = prefix || `_ASYNCIFY_${counter++}`
-  while (path.scope.hasBinding(name)) name = `_ASYNCIFY_${counter++}`
+  while (path.scope.hasBinding(name))
+    name = `${prefix || '_ASYNCIFY_'}${counter++}`
   return t.identifier(name)
 }
 
@@ -247,17 +160,18 @@ function parentFunction<T extends t.Node>(
   return parent as NodePath<t.Function>
 }
 
-function renameBoundIdentifiers<T extends t.Function>(
-  handler: NodePath<T>
+function renameBoundIdentifiers<T extends t.Node>(
+  parent: NodePath<T>,
+  destScope: Scope
 ): void {
   function isBound(name: string): boolean {
-    return handler.scope.hasBinding(name)
+    return destScope.hasBinding(name)
   }
 
   function rename(path: NodePath<t.Identifier>): void {
     let newName = path.node.name
     let counter = 0
-    while (isBound(newName)) newName = `${path.node.name}_ASYNCIFY_${counter++}`
+    while (isBound(newName)) newName = `${path.node.name}${counter++}`
     path.scope.rename(path.node.name, newName)
   }
 
@@ -266,16 +180,15 @@ function renameBoundIdentifiers<T extends t.Function>(
     return (
       isBound(name) &&
       path.isBindingIdentifier() &&
-      ((scope.hasBinding(name) &&
-        handler.scope.getBindingIdentifier(name) === path.node) ||
+      ((destScope.hasBinding(name) &&
+        parent.scope.getBindingIdentifier(name) === path.node) ||
         path.scope.getBinding(name)?.kind === 'var')
     )
   }
 
-  const fn = parentFunction(handler)
-  const { scope } = fn
+  if (parent.isIdentifier() && mustRename(parent)) rename(parent)
 
-  handler.traverse({
+  parent.traverse({
     Identifier: (path: NodePath<t.Identifier>) => {
       if (mustRename(path)) rename(path)
     },
@@ -299,163 +212,271 @@ export function getOutputIdentifier(
   return unboundIdentifier(link)
 }
 
-function replaceLink(
-  link: NodePath<t.CallExpression>,
-  replacement: t.Expression
-): NodePath<any>[] {
-  const { parentPath } = link
-  return (parentPath.isAwaitExpression() ? parentPath : link).replaceWith(
-    awaitedIfNecessary(replacement)
-  ) as any
+export function prepareHandler(handler: NodePath<t.Function>): void {
+  // TODO eliminate fallthrough
 }
 
-function isValueConsumed<T extends t.Expression>(expr: NodePath<T>): boolean {
-  let { parentPath } = expr
-  if (parentPath.isExpressionStatement()) return false
-  if (parentPath.isAwaitExpression()) return isValueConsumed(parentPath)
-  return true
+function convertBodyToBlockStatement<T extends t.Function>(
+  func: NodePath<T>
+): NodePath<t.BlockStatement> {
+  const body = func.get('body') as NodePath<t.Expression | t.BlockStatement>
+  if (body.isBlockStatement()) return body
+  return (body.replaceWith(
+    t.blockStatement([t.returnStatement(body.node as t.Expression)])
+  ) as any)[0]
+}
+
+function prependBodyStatement<T extends t.Function, S extends t.Statement>(
+  func: NodePath<T>,
+  statement: S
+): NodePaths<S[]> {
+  return convertBodyToBlockStatement(func).unshiftContainer('body', [statement])
+}
+
+function replaceReturnStatements<T extends t.Statement>(
+  path: NodePath<t.BlockStatement>,
+  getReplacement: (statement: t.Expression) => T
+): void {
+  path.traverse({
+    ReturnStatement(path: NodePath<t.ReturnStatement>) {
+      const replacement = getReplacement(
+        path.node.argument || t.identifier('undefined')
+      )
+      if (replacement.type === 'ReturnStatement') {
+        const { argument } = replacement as t.ReturnStatement
+        if (argument) path.get('argument').replaceWith(argument)
+        else path.get('argument').remove()
+      } else path.replaceWith(replacement)
+    },
+    Function(path: NodePath<t.Function>) {
+      path.skip()
+    },
+  })
+}
+
+function isIdentifierDeclarator<T extends t.Node>(path: NodePath<T>): boolean {
+  return (
+    path.isVariableDeclarator() &&
+    (path as NodePath<t.VariableDeclarator>).get('id').isIdentifier()
+  )
+}
+
+function isIdentifierAssignmentExpression<T extends t.Node>(
+  path: NodePath<T>
+): boolean {
+  return (
+    path.isAssignmentExpression() &&
+    (path as NodePath<t.AssignmentExpression>).get('left').isIdentifier()
+  )
+}
+
+function findReplaceTarget<T extends t.Node>(link: NodePath<T>): NodePath<any> {
+  const { parentPath } = link
+  if (parentPath.isAwaitExpression()) return findReplaceTarget(parentPath)
+  if (
+    parentPath.isReturnStatement() ||
+    parentPath.isExpressionStatement() ||
+    isIdentifierAssignmentExpression(parentPath)
+  ) {
+    return parentPath
+  }
+  if (isIdentifierDeclarator(parentPath)) {
+    const declaration = parentPath.parentPath
+    if (
+      declaration.isVariableDeclaration() &&
+      declaration.node.declarations.length === 1
+    ) {
+      return declaration
+    }
+  }
+  return link
+}
+
+function findOnlyReturn(
+  path: NodePath<t.BlockStatement>
+): NodePath<t.ReturnStatement> | null {
+  let multipleFound = false
+  let result: NodePath<t.ReturnStatement> | null = null
+  path.traverse({
+    ReturnStatement(path: NodePath<t.ReturnStatement>) {
+      if (result) {
+        multipleFound = true
+        path.stop()
+      }
+      result = path
+    },
+    Function(path: NodePath<t.Function>) {
+      path.skip()
+    },
+  })
+  return multipleFound ? null : result
+}
+
+function replaceLink<T extends t.Expression | t.BlockStatement>(
+  link: NodePath<t.CallExpression>,
+  replacement: NodePath<T>
+): NodePath | NodePath[] {
+  if (replacement.isBlockStatement()) {
+    renameBoundIdentifiers(replacement, link.scope)
+    const onlyReturn = findOnlyReturn(replacement)
+    if (onlyReturn) {
+      const value = onlyReturn.node.argument || t.identifier('undefined')
+      onlyReturn.remove()
+      const output = parentStatement(link).insertBefore(
+        replacement.node.body
+      ) as any
+      const { parentPath } = link
+      let target = parentPath.isAwaitExpression() ? parentPath : link
+      target.replaceWith(awaitedIfNecessary(value))
+      return output
+    }
+    const target = findReplaceTarget(link)
+    if (target.isReturnStatement()) {
+      replaceReturnStatements(replacement, argument =>
+        t.returnStatement(awaitedIfNecessary(argument))
+      )
+      return target.replaceWithMultiple(replacement.node.body) as any
+    } else if (target.isExpressionStatement()) {
+      replaceReturnStatements(replacement, argument =>
+        t.expressionStatement(awaitedIfNecessary(argument))
+      )
+      return target.replaceWithMultiple(replacement.node.body) as any
+    } else if (target.isVariableDeclaration()) {
+      const {
+        declarations: [{ id }],
+      } = target.node
+      replacement.unshiftContainer('body', template.statements.ast`let ${id}`)
+      replaceReturnStatements(replacement, argument =>
+        t.expressionStatement(
+          t.assignmentExpression('=', id, awaitedIfNecessary(argument))
+        )
+      )
+      return target.replaceWithMultiple(replacement.node.body) as any
+    } else if (target.isAssignmentExpression()) {
+      const { left, operator } = target.node
+      replaceReturnStatements(replacement, argument =>
+        t.expressionStatement(
+          t.assignmentExpression(operator, left, awaitedIfNecessary(argument))
+        )
+      )
+      return target.replaceWithMultiple(replacement.node.body) as any
+    } else {
+      const result = unboundIdentifier(replacement, 'result')
+      replacement.unshiftContainer(
+        'body',
+        template.statements.ast`let ${result}`
+      )
+      replaceReturnStatements(replacement, argument =>
+        t.expressionStatement(
+          t.assignmentExpression('=', result, awaitedIfNecessary(argument))
+        )
+      )
+      const output = parentStatement(target).insertBefore(
+        replacement.node.body
+      ) as any
+      target.replaceWith(result)
+      return output
+    }
+  } else {
+    const { parentPath } = link
+    return (parentPath.isAwaitExpression() ? parentPath : link).replaceWith(
+      awaitedIfNecessary(replacement.node as t.Expression)
+    ) as any
+  }
+}
+
+function getPreceedingLink(
+  link: NodePath<t.CallExpression>
+): NodePath<t.Expression> {
+  const callee = link.get('callee')
+  if (!callee.isMemberExpression()) {
+    throw new Error(`code that uses V8 intrinsic identifiers isn't supported`)
+  }
+  return callee.get('object') as NodePath<t.Expression>
+}
+
+function hasMutableIdentifiers(path: NodePath): boolean {
+  let result = false
+  path.traverse({
+    Identifier(path: NodePath<t.Identifier>) {
+      if (path.isBindingIdentifier()) {
+        const binding = path.scope.getBinding(path.node.name)
+        if (!binding) return
+        if (!binding.constant) {
+          path.stop()
+          result = true
+        }
+      }
+    },
+  })
+  return result
 }
 
 export function unwindThen(
   handler: NodePath<t.Expression>
-): NodePath<t.Expression> {
+): NodePath | NodePath[] {
   const link = handler.parentPath as NodePath<t.CallExpression>
-  const callee = link.get('callee')
-  if (!callee.isMemberExpression()) {
-    throw new Error(`code that uses V8 intrinsic identifiers isn't supported`)
-  }
-  const { object } = callee.node
+  const preceeding = awaitedIfNecessary(getPreceedingLink(link).node)
 
   if (isNullish(handler.node)) {
-    const [replaced]: [NodePath<t.Expression>] = link.replaceWith(object) as any
-    return replaced
+    return link.replaceWith(preceeding) as any
   }
 
   if (handler.isFunction()) {
-    renameBoundIdentifiers(handler)
-
-    const body = (handler as NodePath<t.Function>).get('body')
-
-    const fn = handler.node
-    const input = (handler as NodePath<t.Function>).get('params')?.[0]
-
-    const statement = parentStatement(link)
-    let newPath: NodePath<t.Expression>
-    if (input) {
-      // TODO use let if values are reassigned
-      const declaration = template.statement.ast`const ${
-        input.node
-      } = ${awaitedIfNecessary(object)}`
-      const [replaced]: [
-        NodePath<t.VariableDeclaration>
-      ] = statement.insertBefore(declaration) as any
-      newPath = replaced.get('declarations.0.init.argument') as any
-    } else {
-      const [replaced]: [
-        NodePath<t.ExpressionStatement>
-      ] = statement.insertBefore(
-        t.expressionStatement(awaitedIfNecessary(object))
-      ) as any
-      newPath = replaced.get('expression.argument') as any
-    }
-
-    if (body.isBlockStatement()) {
-      const returnValue = convertBodyToSingleReturn(
-        body,
-        getOutputIdentifier(link)
+    const handlerFunction = handler as NodePath<t.Function>
+    const input = handlerFunction.get('params')[0]
+    if (input) renameBoundIdentifiers(input, link.scope)
+    const kind = hasMutableIdentifiers(input) ? 'let' : 'const'
+    const inputNode = input?.node
+    if (input) input.remove()
+    const [prepended] = prependBodyStatement(
+      handler,
+      inputNode && !isNullish(inputNode)
+        ? t.variableDeclaration(kind, [
+            t.variableDeclarator(inputNode, preceeding),
+          ])
+        : t.expressionStatement(preceeding)
+    )
+    if (prepended.isVariableDeclaration()) {
+      prepended.scope.registerBinding(
+        prepended.node.kind,
+        prepended.get('declarations.0.id') as any
       )
-      statement.insertBefore(body.node.body)
-      if (returnValue) {
-        replaceLink(link, returnValue)
-      } else {
-        if (input.isPattern()) {
-          // TODO
-        }
-        replaceLink(
-          link,
-          t.callExpression(fn, input.node ? [input.node as any] : [])
-        )
-      }
-    } else if (body.node.type !== 'BlockStatement') {
-      replaceLink(link, body.node)
     }
-    return newPath
-  } else {
-    const [replacement] = replaceLink(
-      link,
-      t.callExpression(handler.node, [awaitedIfNecessary(callee.node)])
-    ) as any
-    return replacement
+    return replaceLink(link, handlerFunction.get('body')) as any
   }
+  return link.replaceWith(t.callExpression(handler.node, [preceeding])) as any
 }
 
 export function unwindCatch(
   handler: NodePath<t.Expression>
-): NodePath<t.Expression> {
-  const link = handler.parentPath as NodePath<t.CallExpression>
-  const callee = link.get('callee')
-  if (!callee.isMemberExpression()) {
-    throw new Error(`code that uses V8 intrinsic identifiers isn't supported`)
-  }
-  const { object } = callee.node
-  const isThenCatch = getThenHandler(link) != null
-  if (isThenCatch) handler.remove()
-  if (isNullish(handler.node)) {
-    if (isThenCatch) return link as any
-    const [replaced]: [NodePath<t.Expression>] = link.replaceWith(object) as any
-    return replaced
-  }
+): NodePath | NodePath[] {}
 
-  let tryStatements: t.Statement[]
-  let catchStatements: t.Statement[]
-
-  if (handler.isFunction()) {
-    renameBoundIdentifiers(handler)
-
-    const body = (handler as NodePath<t.Function>).get('body')
-
-    const fn = handler.node
-    const input = (handler as NodePath<t.Function>).get('params')?.[0]
-
-    const statement = parentStatement(link)
-    let newPath: NodePath<t.Expression>
-    // TODO use let if values are reassigned
-    let tryStatement = input
-      ? template.statement.ast`const ${input.node} = ${awaitedIfNecessary(
-          object
-        )}`
-      : t.expressionStatement(awaitedIfNecessary(object))
-
-    if (body.isBlockStatement()) {
-      const returnValue = convertBodyToSingleReturn(
-        body,
-        getOutputIdentifier(link)
-      )
-      statement.insertBefore(body.node.body)
-      if (returnValue) {
-        replaceLink(link, returnValue)
-      } else {
-        if (input.isPattern()) {
-          // TODO
-        }
-        replaceLink(
-          link,
-          t.callExpression(fn, input.node ? [input.node as any] : [])
-        )
-      }
-    } else if (body.node.type !== 'BlockStatement') {
-      replaceLink(link, body.node)
+function findAwaitedExpression(
+  paths: NodePath | NodePath[]
+): NodePath<t.Expression> | null {
+  if (Array.isArray(paths)) {
+    for (const path of paths) {
+      const result = findAwaitedExpression(path)
+      if (result) return result
     }
-  } else {
-    const [replacement] = replaceLink(
-      link,
-      t.callExpression(handler.node, [awaitedIfNecessary(callee.node)])
-    ) as any
+    return null
   }
+  let result: NodePath<t.Expression> | null = null
+  paths.traverse({
+    AwaitExpression(path: NodePath<t.AwaitExpression>) {
+      result = path.get('argument')
+      path.stop()
+    },
+    Function(path: NodePath<t.Function>) {
+      path.skip()
+    },
+  })
+  return result
 }
 
 export function unwindPromiseChain(path: NodePath<t.CallExpression>): void {
-  const { scope } = path
+  const { scope } = parentStatement(path)
 
   let link: NodePath<t.Expression> | null = path as any
 
@@ -465,30 +486,28 @@ export function unwindPromiseChain(path: NodePath<t.CallExpression>): void {
     const finallyHandler = getFinallyHandler(link)
 
     const callee = (link as NodePath<t.CallExpression>).get('callee')
-    const object = callee.isMemberExpression()
-      ? (callee as NodePath<t.MemberExpression>).get('object')
-      : null
+    if (!callee.isMemberExpression()) break
 
+    let replacements: NodePath | NodePath[] | null = null
     if (catchHandler) {
-      link = unwindCatch(catchHandler)
+      replacements = unwindCatch(catchHandler)
     } else if (thenHandler) {
-      link = unwindThen(thenHandler)
+      replacements = unwindThen(thenHandler)
     } else if (finallyHandler) {
       // TODO
-      link = null
-    } else {
-      link = null
     }
+    link = replacements ? findAwaitedExpression(replacements) : null
     ;(scope as any).crawl()
   }
 }
 
 export function unwindPromiseChains(path: NodePath<t.Function>): void {
+  const chains: NodePath<t.CallExpression>[] = []
   path.traverse({
     AwaitExpression(path: NodePath<t.AwaitExpression>) {
       const argument = path.get('argument')
       if (argument.isCallExpression() && isPromiseMethodCall(argument.node)) {
-        unwindPromiseChain(argument)
+        chains.push(argument)
       }
     },
     ReturnStatement(path: NodePath<t.ReturnStatement>) {
@@ -501,21 +520,39 @@ export function unwindPromiseChains(path: NodePath<t.Function>): void {
       path.skip()
     },
   })
+  for (const chain of chains) unwindPromiseChain(chain)
+}
+
+export function ensureAsync(path: NodePath<t.Function>): void {
+  path.node.async = true
+  path.get('body').traverse({
+    ReturnStatement(path: NodePath<t.ReturnStatement>) {
+      const argument = path.get('argument')
+      if (argument && !argument.isAwaitExpression()) {
+        argument.replaceWith(
+          awaitedIfNecessary((argument as NodePath<t.Expression>).node)
+        )
+      }
+    },
+    Function(path: NodePath<t.Function>) {
+      path.skip()
+    },
+  })
 }
 
 function asyncifyFunction(path: NodePath<t.Function>): void {
   if (!returnsOrAwaitsPromises(path) && !isPromiseHandler(path)) return
-  path.node.async = true
+  ensureAsync(path)
   unwindPromiseChains(path)
 }
 
 export default function asyncify(path: NodePath<any>): void {
+  const functions: NodePath<t.Function>[] = []
   path.traverse({
-    Function: {
-      exit(path: NodePath<t.Function>): void {
-        // transform innermost functions first
-        asyncifyFunction(path)
-      },
+    Function(path: NodePath<t.Function>): void {
+      functions.push(path)
     },
   })
+  let fn
+  while ((fn = functions.pop())) asyncifyFunction(fn)
 }

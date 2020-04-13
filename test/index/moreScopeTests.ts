@@ -26,13 +26,13 @@ async function foo() {
   const a = 2
   const b = 3
   const x = await bar()
-  const c_ASYNCIFY_0 = 4
-  function d_ASYNCIFY_0() {}
-  d_ASYNCIFY_0()
+  const c0 = 4
+  function d0() {}
+  d0()
   for (const q of x) {
-    var a_ASYNCIFY_0 = 5
+    var a0 = 5
     let b = 2
   }
-  return await a_ASYNCIFY_0
+  return await a0
 }
 `

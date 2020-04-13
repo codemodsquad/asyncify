@@ -2,7 +2,7 @@ export const input = `
 async function foo() {
   const bar = await baz.then(value => {
     if (value instanceof Blargh) return processBlargh(value)
-    return processOther(value)
+    else return processOther(value)
   })
 }
 `

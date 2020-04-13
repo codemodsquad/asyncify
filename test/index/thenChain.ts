@@ -18,10 +18,10 @@ export const options = {}
 export const expected = `
 async function foo() {
   const bar = () => 3
-  const bar_ASYNCIFY_1 = await bar()
-  const bar_ASYNCIFY_0 = await bar_ASYNCIFY_1()
-  const baz_ASYNCIFY_0 = await bar_ASYNCIFY_0()
-  const [{ foo: baz = 5 }] = baz_ASYNCIFY_0 * 2
+  const bar1 = await bar()
+  const bar0 = await bar1()
+  const baz0 = await bar0()
+  const [{ foo: baz = 5 }] = baz0 * 2
   return baz + 3
 }
 `
