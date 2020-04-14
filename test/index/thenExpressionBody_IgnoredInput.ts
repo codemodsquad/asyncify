@@ -9,6 +9,6 @@ export const options = {}
 export const expected = `
 async function foo(value) {
   await baz
-  return await process(value)
+  return process(value)
 }
 `

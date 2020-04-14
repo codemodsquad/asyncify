@@ -18,6 +18,6 @@ async function foo() {
     if (condition) await processBlargh()
     else await processOther()
   }
-  return await process(result)
+  return process(result)
 }
 `

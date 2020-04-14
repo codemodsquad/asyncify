@@ -19,11 +19,11 @@ export const expected = `
 async function foo() {
   try {
     const value = await baz
-    if (value instanceof Blargh) return await processBlargh(value)
-    else return await processOther(value)
+    if (value instanceof Blargh) return processBlargh(value)
+    else return processOther(value)
   } catch (err) {
-    if (err instanceof ConstraintViolation) return await processConstraintViolation(err)
-    else return await processOther(err)
+    if (err instanceof ConstraintViolation) return processConstraintViolation(err)
+    else return processOther(err)
   }
 }
 `

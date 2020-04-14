@@ -24,11 +24,11 @@ async function createUser(args) {
     const user = await Users.create({
       username,
     })
-    return await addUserToOrganization(user, organizationId)
+    return addUserToOrganization(user, organizationId)
   }
   catch (err) {
     console.error(err.stack)
-    return await failedUser()
+    return failedUser()
   }
   finally {
     await cleanup()

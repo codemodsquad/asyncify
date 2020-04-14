@@ -15,6 +15,6 @@ async function foo() {
   const value = await baz
   if (value instanceof Blargh) result = await processBlargh(value)
   else result = await processOther(value)
-  return await process(result)
+  return process(result)
 }
 `

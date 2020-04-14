@@ -14,7 +14,7 @@ export const expected = `
 async function foo() {
   const value = 3
   const {value: value0} = await baz
-  if (value0 instanceof Blargh) return await processBlargh(value0)
-  else return await processOther(value0)
+  if (value0 instanceof Blargh) return processBlargh(value0)
+  else return processOther(value0)
 }
 `

@@ -18,7 +18,7 @@ async function foo() {
   function processBlargh(value) {
     return JSON.stringify(value)
   }
-  if (value instanceof Blargh) return await processBlargh(value)
-  else return await processOther(value)
+  if (value instanceof Blargh) return processBlargh(value)
+  else return processOther(value)
 }
 `

@@ -9,9 +9,9 @@ export const options = {}
 export const expected = `
 async function foo(err) {
   try {
-    return await baz
+    return baz
   } catch (err0) {
-    return await err.message
+    return err.message
   }
 }
 `

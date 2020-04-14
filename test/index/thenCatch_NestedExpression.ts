@@ -26,6 +26,6 @@ async function foo() {
     if (err instanceof ConstraintViolation) result = await processConstraintViolation(err)
     else result = await processOther(err)
   }
-  return await process(result)
+  return process(result)
 }
 `

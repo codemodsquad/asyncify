@@ -37,6 +37,35 @@ export function isPromiseValued(node: t.Node): boolean {
   )
 }
 
+export function getPromiseStaticMethodCall<T extends t.Node>(
+  thing: T | NodePath<T>
+): string | null {
+  if (thing instanceof NodePath) return getPromiseStaticMethodCall(thing.node)
+  if (thing.type !== 'CallExpression') return null
+  const { callee } = thing as t.CallExpression
+  if (callee.type !== 'MemberExpression') return null
+  const { object, property } = callee as t.MemberExpression
+  if (
+    object.type !== 'Identifier' ||
+    object.name !== 'Promise' ||
+    (property.type !== 'Identifier' && property.type !== 'StringLiteral')
+  )
+    return null
+  return property.type === 'Identifier' ? property.name : property.value
+}
+
+export function isPromiseResolveCall<T extends t.Node>(
+  thing: T | NodePath<T>
+): boolean {
+  return getPromiseStaticMethodCall(thing) === 'resolve'
+}
+
+export function isPromiseRejectCall<T extends t.Node>(
+  thing: T | NodePath<T>
+): boolean {
+  return getPromiseStaticMethodCall(thing) === 'reject'
+}
+
 export function returnsOrAwaitsPromises(path: NodePath<t.Function>): boolean {
   if (path.node.async) return true
   let result = false
@@ -65,9 +94,7 @@ export function isPromiseHandler(path: NodePath<t.Function>): boolean {
   return isPromiseValued(path.parentPath.node)
 }
 
-export function awaitedIfNecessary<T extends t.Expression>(
-  node: T
-): t.Expression {
+export function needsAwait<T extends t.Expression>(node: T): boolean {
   if (
     t.isLiteral(node) ||
     t.isArrayExpression(node) ||
@@ -82,10 +109,14 @@ export function awaitedIfNecessary<T extends t.Expression>(
     t.isAwaitExpression(node) ||
     isNullish(node)
   ) {
-    return node
+    return false
   } else {
-    return t.awaitExpression(node)
+    return true
   }
+}
+
+export function awaited<T extends t.Expression>(node: T): t.Expression {
+  return needsAwait(node) ? t.awaitExpression(node) : node
 }
 
 export function getThenHandler(
@@ -310,7 +341,7 @@ function replaceLink<T extends t.Expression | t.BlockStatement>(
   if (!(replacement instanceof NodePath)) {
     const { parentPath } = link
     return (parentPath.isAwaitExpression() ? parentPath : link).replaceWith(
-      awaitedIfNecessary(replacement)
+      awaited(replacement)
     ) as any
   }
   if (replacement.isBlockStatement()) {
@@ -324,18 +355,18 @@ function replaceLink<T extends t.Expression | t.BlockStatement>(
       ) as any
       const { parentPath } = link
       let target = parentPath.isAwaitExpression() ? parentPath : link
-      target.replaceWith(awaitedIfNecessary(value))
+      target.replaceWith(awaited(value))
       return output
     }
     const target = findReplaceTarget(link)
     if (target.isReturnStatement()) {
       replaceReturnStatements(replacement, argument =>
-        t.returnStatement(awaitedIfNecessary(argument))
+        t.returnStatement(awaited(argument))
       )
       return target.replaceWithMultiple(replacement.node.body) as any
     } else if (target.isExpressionStatement()) {
       replaceReturnStatements(replacement, argument =>
-        t.expressionStatement(awaitedIfNecessary(argument))
+        t.expressionStatement(awaited(argument))
       )
       return target.replaceWithMultiple(replacement.node.body) as any
     } else if (target.isVariableDeclaration()) {
@@ -345,7 +376,7 @@ function replaceLink<T extends t.Expression | t.BlockStatement>(
       replacement.unshiftContainer('body', template.statements.ast`let ${id}`)
       replaceReturnStatements(replacement, argument =>
         t.expressionStatement(
-          t.assignmentExpression('=', id, awaitedIfNecessary(argument))
+          t.assignmentExpression('=', id, awaited(argument))
         )
       )
       return target.replaceWithMultiple(replacement.node.body) as any
@@ -353,7 +384,7 @@ function replaceLink<T extends t.Expression | t.BlockStatement>(
       const { left, operator } = target.node
       replaceReturnStatements(replacement, argument =>
         t.expressionStatement(
-          t.assignmentExpression(operator, left, awaitedIfNecessary(argument))
+          t.assignmentExpression(operator, left, awaited(argument))
         )
       )
       return target.replaceWithMultiple(replacement.node.body) as any
@@ -365,7 +396,7 @@ function replaceLink<T extends t.Expression | t.BlockStatement>(
       )
       replaceReturnStatements(replacement, argument =>
         t.expressionStatement(
-          t.assignmentExpression('=', result, awaitedIfNecessary(argument))
+          t.assignmentExpression('=', result, awaited(argument))
         )
       )
       const output = parentStatement(target).insertBefore(
@@ -377,7 +408,7 @@ function replaceLink<T extends t.Expression | t.BlockStatement>(
   } else {
     const { parentPath } = link
     return (parentPath.isAwaitExpression() ? parentPath : link).replaceWith(
-      awaitedIfNecessary(replacement.node as t.Expression)
+      awaited(replacement.node as t.Expression)
     ) as any
   }
 }
@@ -413,7 +444,7 @@ export function unwindThen(
   handler: NodePath<t.Expression>
 ): NodePath | NodePath[] {
   const link = handler.parentPath as NodePath<t.CallExpression>
-  const preceeding = awaitedIfNecessary(getPreceedingLink(link).node)
+  const preceeding = awaited(getPreceedingLink(link).node)
 
   if (isNullish(handler.node)) {
     return replaceLink(link, preceeding)
@@ -476,7 +507,7 @@ export function unwindCatch(
       t.callExpression(link.node.callee, [link.node.arguments[0]])
     )
   } else {
-    preceeding = awaitedIfNecessary(getPreceedingLink(link).node)
+    preceeding = awaited(getPreceedingLink(link).node)
   }
 
   if (isNullish(handler.node)) {
@@ -523,7 +554,7 @@ export function unwindFinally(
   handler: NodePath<t.Expression>
 ): NodePath | NodePath[] {
   const link = handler.parentPath as NodePath<t.CallExpression>
-  const preceeding = awaitedIfNecessary(getPreceedingLink(link).node)
+  const preceeding = awaited(getPreceedingLink(link).node)
 
   if (isNullish(handler.node)) {
     return replaceLink(link, preceeding)
@@ -545,7 +576,7 @@ export function unwindFinally(
           null,
           replaceReturnStatements(
             convertBodyToBlockStatement(handlerFunction),
-            awaitedIfNecessary as any
+            awaited as any
           ).node
         ),
       ])
@@ -612,12 +643,6 @@ export function unwindPromiseChains(path: NodePath<t.Function>): void {
         chains.push(argument)
       }
     },
-    // ReturnStatement(path: NodePath<t.ReturnStatement>) {
-    //   const { argument } = path.node
-    //   if (argument && argument.type !== 'AwaitExpression') {
-    //     path.get('argument').replaceWith(awaitedIfNecessary(argument))
-    //   }
-    // },
     Function(path: NodePath<t.Function>) {
       path.skip()
     },
@@ -631,9 +656,59 @@ export function ensureAsync(path: NodePath<t.Function>): void {
     ReturnStatement(path: NodePath<t.ReturnStatement>) {
       const argument = path.get('argument')
       if (argument.node && !argument.isAwaitExpression()) {
-        argument.replaceWith(
-          awaitedIfNecessary((argument as NodePath<t.Expression>).node)
+        argument.replaceWith(awaited((argument as NodePath<t.Expression>).node))
+      }
+    },
+    Function(path: NodePath<t.Function>) {
+      path.skip()
+    },
+  })
+}
+
+function unwrapPromiseResolves(node: t.Node | undefined): t.Node | undefined {
+  while (node && isPromiseResolveCall(node)) {
+    node = (node as t.CallExpression).arguments[0]
+  }
+  return node
+}
+
+function finalCleanup(path: NodePath<t.Function>): void {
+  path.traverse({
+    AwaitExpression(path: NodePath<t.AwaitExpression>) {
+      let argument = path.get('argument')
+      const { parentPath } = path
+      if (argument.isCallExpression() && isPromiseResolveCall(argument)) {
+        const value = unwrapPromiseResolves(argument.node)
+        if (
+          parentPath.isExpressionStatement() &&
+          (!value || !needsAwait(value as any))
+        ) {
+          parentPath.remove()
+        } else if (value) {
+          argument.replaceWith(value)
+        }
+      }
+    },
+    ReturnStatement(path: NodePath<t.ReturnStatement>) {
+      let argument = path.get('argument')
+      const value = argument.isAwaitExpression()
+        ? (argument as NodePath<t.AwaitExpression>).get('argument')
+        : argument
+      if (value.isCallExpression() && isPromiseResolveCall(value)) {
+        const unwrapped = unwrapPromiseResolves(value.node)
+        if (unwrapped) value.replaceWith(unwrapped)
+        else argument.remove()
+      } else if (value.isCallExpression() && isPromiseRejectCall(value)) {
+        path.replaceWith(
+          t.throwStatement(
+            t.newExpression(
+              t.identifier('Error'),
+              value.node.arguments.slice(0, 1)
+            )
+          )
         )
+      } else if (argument.isAwaitExpression()) {
+        argument.replaceWith(argument.node.argument)
       }
     },
     Function(path: NodePath<t.Function>) {
@@ -646,6 +721,7 @@ function asyncifyFunction(path: NodePath<t.Function>): void {
   if (!returnsOrAwaitsPromises(path) && !isPromiseHandler(path)) return
   ensureAsync(path)
   unwindPromiseChains(path)
+  finalCleanup(path)
 }
 
 export default function asyncify(path: NodePath<any>): void {
@@ -656,5 +732,7 @@ export default function asyncify(path: NodePath<any>): void {
     },
   })
   let fn
-  while ((fn = functions.pop())) asyncifyFunction(fn)
+  while ((fn = functions.pop())) {
+    asyncifyFunction(fn)
+  }
 }

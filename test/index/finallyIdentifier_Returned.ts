@@ -9,7 +9,7 @@ export const options = {}
 export const expected = `
 async function foo() {
   try {
-    return await baz
+    return baz
   } finally {
     await cleanup()
   }

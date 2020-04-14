@@ -33,6 +33,6 @@ async function foo() {
     var a0 = 5
     let b = 2
   }
-  return await a0
+  return a0
 }
 `
