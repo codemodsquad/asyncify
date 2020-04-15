@@ -11,19 +11,22 @@ export default function returnsOrAwaitsPromises(
   if (!body.isBlockStatement()) {
     return isPromiseValued(body.node)
   }
-  body.traverse({
-    ReturnStatement(path: NodePath<t.ReturnStatement>) {
-      const {
-        node: { argument },
-      } = path
-      if (argument && isPromiseValued(argument)) {
-        result = true
-        path.stop()
-      }
+  body.traverse(
+    {
+      ReturnStatement(path: NodePath<t.ReturnStatement>) {
+        const {
+          node: { argument },
+        } = path
+        if (argument && isPromiseValued(argument)) {
+          result = true
+          path.stop()
+        }
+      },
+      Function(path: NodePath<t.Function>) {
+        path.skip()
+      },
     },
-    Function(path: NodePath<t.Function>) {
-      path.skip()
-    },
-  })
+    body.state
+  )
   return result
 }

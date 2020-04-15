@@ -20,18 +20,18 @@ export const options = {}
 export const expected = `
 async function createUser(args) {
   const {username, groups} = args
-  const user = await Users.create({username})
-  let returnValue
   try {
+    const user = await Users.create({
+      username
+    })
     if (groups) {
-      returnValue = await addUserToGroups(user, groups)
+      return addUserToGroups(user, groups)
     } else {
-      returnValue = user
+      return user
     }
   } catch (err) {
     console.error(err.stack)
-    returnValue = dummyUser()
+    return dummyUser()
   }
-  return returnValue
 }
 `

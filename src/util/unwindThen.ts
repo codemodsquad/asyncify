@@ -8,6 +8,7 @@ import renameBoundIdentifiers from './renameBoundIdentifiers'
 import hasMutableIdentifiers from './hasMutableIdentifiers'
 import prependBodyStatement from './prependBodyStatement'
 import replaceLink from './replaceLink'
+import convertConditionalReturns from './convertConditionalReturns'
 
 export function unwindThen(
   handler: NodePath<t.Expression>
@@ -22,6 +23,14 @@ export function unwindThen(
   if (handler.isFunction()) {
     const handlerFunction = handler as NodePath<t.Function>
     const input = handlerFunction.get('params')[0]
+    const body = handlerFunction.get('body')
+    if (body.isBlockStatement() && !convertConditionalReturns(body)) {
+      return replaceLink(
+        link,
+        t.callExpression(handler.node, [preceeding])
+      ) as any
+    }
+
     if (input) renameBoundIdentifiers(input, link.scope)
     const kind = input && hasMutableIdentifiers(input) ? 'let' : 'const'
     const inputNode = input?.node

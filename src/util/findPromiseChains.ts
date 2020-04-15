@@ -7,16 +7,19 @@ export default function findPromiseChains(
   path: NodePath<t.Function>
 ): NodePath<t.CallExpression>[] {
   const chains: NodePath<t.CallExpression>[] = []
-  path.traverse({
-    AwaitExpression(path: NodePath<t.AwaitExpression>) {
-      const argument = path.get('argument')
-      if (argument.isCallExpression() && isPromiseMethodCall(argument.node)) {
-        chains.push(argument)
-      }
+  path.traverse(
+    {
+      CallExpression(path: NodePath<t.CallExpression>) {
+        if (isPromiseMethodCall(path.node)) {
+          chains.push(path)
+          path.skip()
+        }
+      },
+      Function(path: NodePath<t.Function>) {
+        path.skip()
+      },
     },
-    Function(path: NodePath<t.Function>) {
-      path.skip()
-    },
-  })
+    path.state
+  )
   return chains
 }

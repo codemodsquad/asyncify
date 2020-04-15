@@ -9,10 +9,15 @@ import unwindCatch from './unwindCatch'
 import { unwindThen } from './unwindThen'
 import unwindFinally from './unwindFinally'
 import parentStatement from './parentStatement'
+import replaceWithImmediatelyInvokedAsyncArrowFunction from './replaceWithImmediatelyInvokedAsyncArrowFunction'
 
 export default function unwindPromiseChain(
   path: NodePath<t.CallExpression>
 ): void {
+  if (!path.parentPath.isAwaitExpression()) {
+    path = replaceWithImmediatelyInvokedAsyncArrowFunction(path)[1]
+  }
+
   const { scope } = parentStatement(path)
 
   let link: NodePath<t.Expression> | null = path as any

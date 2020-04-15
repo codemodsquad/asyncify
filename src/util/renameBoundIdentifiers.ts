@@ -29,12 +29,15 @@ export default function renameBoundIdentifiers<T extends t.Node>(
 
   if (parent.isIdentifier() && mustRename(parent)) rename(parent)
 
-  parent.traverse({
-    Identifier: (path: NodePath<t.Identifier>) => {
-      if (mustRename(path)) rename(path)
+  parent.traverse(
+    {
+      Identifier: (path: NodePath<t.Identifier>) => {
+        if (mustRename(path)) rename(path)
+      },
+      Function(path: NodePath<t.Function>) {
+        path.skipKey('body')
+      },
     },
-    Function(path: NodePath<t.Function>) {
-      path.skipKey('body')
-    },
-  })
+    parent.state
+  )
 }

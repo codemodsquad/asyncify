@@ -12,14 +12,17 @@ export default function findAwaitedExpression(
     return null
   }
   let result: NodePath<t.Expression> | null = null
-  paths.traverse({
-    AwaitExpression(path: NodePath<t.AwaitExpression>) {
-      if (result == null) result = path.get('argument')
-      path.stop()
+  paths.traverse(
+    {
+      AwaitExpression(path: NodePath<t.AwaitExpression>) {
+        if (result == null) result = path.get('argument')
+        path.stop()
+      },
+      Function(path: NodePath<t.Function>) {
+        path.skip()
+      },
     },
-    Function(path: NodePath<t.Function>) {
-      path.skip()
-    },
-  })
+    paths.state
+  )
   return result
 }

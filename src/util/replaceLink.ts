@@ -6,7 +6,6 @@ import {
   isIdentifierAssignmentExpression,
   isIdentifierDeclarator,
 } from './predicates'
-import convertConditionalReturns from './convertConditionalReturns'
 import renameBoundIdentifiers from './renameBoundIdentifiers'
 import unboundIdentifier from './unboundIdentifier'
 import replaceReturnStatements from './replaceReturnStatements'
@@ -39,14 +38,17 @@ function findOnlyFinalReturn(
   path: NodePath<t.BlockStatement>
 ): NodePath<t.ReturnStatement> | null {
   let count = 0
-  path.traverse({
-    ReturnStatement(path: NodePath<t.ReturnStatement>) {
-      if (count++) path.stop()
+  path.traverse(
+    {
+      ReturnStatement(path: NodePath<t.ReturnStatement>) {
+        if (count++) path.stop()
+      },
+      Function(path: NodePath<t.Function>) {
+        path.skip()
+      },
     },
-    Function(path: NodePath<t.Function>) {
-      path.skip()
-    },
-  })
+    path.state
+  )
   if (count !== 1) return null
   const body = path.get('body')
   const last = body[body.length - 1]
@@ -65,9 +67,6 @@ export default function replaceLink<T extends t.Expression | t.BlockStatement>(
   }
   if (replacement.isBlockStatement()) {
     const target = findReplaceTarget(link)
-    if (!target.isReturnStatement()) {
-      convertConditionalReturns(replacement)
-    }
     renameBoundIdentifiers(replacement, link.scope)
     const onlyFinalReturn = findOnlyFinalReturn(replacement)
     if (onlyFinalReturn) {
