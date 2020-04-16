@@ -15,7 +15,7 @@ export const options = {}
 export const expected = `
 async function foo() {
   try {
-    return baz
+    return await baz
   } catch (err) {
     if (err instanceof ConstraintViolation) return processConstraintViolation(err)
     else return processOther(err)

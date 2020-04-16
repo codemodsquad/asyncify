@@ -8,6 +8,8 @@ import * as t from '@babel/types'
 import traverse, { NodePath } from '@babel/traverse'
 import generate from '@babel/generator'
 import convertConditionalReturns from '../src/util/convertConditionalReturns'
+import dump from './dump'
+global.dump = dump
 
 describe('index', function() {
   testFixtures({

@@ -104,3 +104,32 @@ export function isIdentifierAssignmentExpression<T extends t.Node>(
     (path as NodePath<t.AssignmentExpression>).get('left').isIdentifier()
   )
 }
+
+export function isInSwitchCase(path: NodePath<any>): boolean {
+  let { parentPath } = path
+  while (parentPath && !parentPath.isFunction()) {
+    if (parentPath.isSwitchCase()) return true
+    ;({ parentPath } = parentPath)
+  }
+  return false
+}
+
+export function isInLoop(path: NodePath<any>): boolean {
+  let { parentPath } = path
+  while (parentPath && !parentPath.isFunction()) {
+    if (parentPath.isLoop()) return true
+    ;({ parentPath } = parentPath)
+  }
+  return false
+}
+
+export function isInTryBlock(path: NodePath<any>): boolean {
+  let { parentPath } = path
+  while (parentPath && !parentPath.isFunction()) {
+    if (parentPath.isTryStatement() && parentPath.get('block') === path)
+      return true
+    path = parentPath
+    ;({ parentPath } = path)
+  }
+  return false
+}

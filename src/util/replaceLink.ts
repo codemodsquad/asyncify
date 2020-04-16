@@ -5,6 +5,7 @@ import template from '@babel/template'
 import {
   isIdentifierAssignmentExpression,
   isIdentifierDeclarator,
+  isInTryBlock,
 } from './predicates'
 import renameBoundIdentifiers from './renameBoundIdentifiers'
 import unboundIdentifier from './unboundIdentifier'
@@ -81,9 +82,11 @@ export default function replaceLink<T extends t.Expression | t.BlockStatement>(
       return output
     }
     if (target.isReturnStatement()) {
-      replaceReturnStatements(replacement, argument =>
-        t.returnStatement(awaited(argument))
-      )
+      if (isInTryBlock(target)) {
+        replaceReturnStatements(replacement, argument =>
+          t.returnStatement(awaited(argument))
+        )
+      }
       return target.replaceWithMultiple(replacement.node.body) as any
     } else if (target.isExpressionStatement()) {
       replaceReturnStatements(replacement, argument =>

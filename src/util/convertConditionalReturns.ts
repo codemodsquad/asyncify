@@ -1,11 +1,8 @@
 import * as t from '@babel/types'
 import { NodePath } from '@babel/traverse'
 import restOfBlockStatement from './restOfBlockStatement'
-import dump from './dump'
 
-function isLastStatementInBlock<T extends t.Statement>(
-  path: NodePath<T>
-): boolean {
+function isLastStatementInBlock(path: NodePath<any>): boolean {
   const { parentPath } = path
   if (!parentPath.isBlockStatement()) return true
   const body = (parentPath as NodePath<t.BlockStatement>).get('body')
@@ -77,30 +74,20 @@ export default function convertConditionalReturns(
   parent: NodePath<t.BlockStatement>
 ): boolean {
   let isUnwindable = true
-  let ifDepth = 0
   const returnStatements: NodePath<t.ReturnStatement>[] = []
   parent.traverse(
     {
-      IfStatement: {
-        enter() {
-          ifDepth++
-        },
-        exit() {
-          ifDepth--
-        },
-      },
       ReturnStatement(path: NodePath<t.ReturnStatement>) {
-        if (ifDepth > 1 || !isLastStatementInBlock(path)) {
-          isUnwindable = false
-          path.stop()
-          return
-        }
         let { parentPath } = path
+        let ifDepth = 0
+        let loopDepth = 0
         while (parentPath && parentPath !== parent) {
+          if (parentPath.isIfStatement()) ifDepth++
+          else if (parentPath.isLoop()) loopDepth++
           if (
-            parentPath.isLoop() ||
-            parentPath.isSwitchCase() ||
-            parentPath.isTryStatement()
+            loopDepth > 1 ||
+            (!isLastStatementInBlock(parentPath) &&
+              (!parentPath.isIfStatement() || ifDepth > 1))
           ) {
             isUnwindable = false
             path.stop()

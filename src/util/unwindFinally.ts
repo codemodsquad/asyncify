@@ -7,10 +7,11 @@ import { isNullish } from './predicates'
 import replaceLink from './replaceLink'
 import replaceReturnStatements from './replaceReturnStatements'
 import convertBodyToBlockStatement from './convertBodyToBlockStatement'
+import convertConditionalReturns from './convertConditionalReturns'
 
 export default function unwindFinally(
   handler: NodePath<t.Expression>
-): NodePath | NodePath[] {
+): NodePath<any> | NodePath<any>[] {
   const link = handler.parentPath as NodePath<t.CallExpression>
   const preceeding = awaited(getPreceedingLink(link).node)
 
@@ -25,20 +26,26 @@ export default function unwindFinally(
     ) as any
   }
   const handlerFunction = handler as NodePath<t.Function>
-  handlerFunction
-    .get('body')
-    .replaceWith(
-      t.blockStatement([
-        t.tryStatement(
-          t.blockStatement([t.returnStatement(preceeding)]),
-          null,
-          replaceReturnStatements(
-            convertBodyToBlockStatement(handlerFunction),
-            awaited as any
-          ).node
-        ),
-      ])
-    )
-  ;(handlerFunction.get('body').scope as any).crawl()
-  return replaceLink(link, handlerFunction.get('body')) as any
+  const body = handlerFunction.get('body')
+  if (body.isBlockStatement() && !convertConditionalReturns(body)) {
+    return getPreceedingLink(link)
+  }
+  body.replaceWith(
+    t.blockStatement([
+      t.tryStatement(
+        t.blockStatement([t.returnStatement(preceeding)]),
+        null,
+        replaceReturnStatements(
+          convertBodyToBlockStatement(handlerFunction),
+          (argument: t.Expression) =>
+            isNullish(argument)
+              ? null
+              : t.expressionStatement(awaited(argument))
+        ).node
+      ),
+    ])
+  )
+  const finalBody = handlerFunction.get('body')
+  ;(finalBody.scope as any).crawl()
+  return replaceLink(link, finalBody) as any
 }

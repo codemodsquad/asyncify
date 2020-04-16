@@ -4,7 +4,9 @@ import {
   isPromiseResolveCall,
   needsAwait,
   isPromiseRejectCall,
+  isInTryBlock,
 } from './predicates'
+import { awaited } from './builders'
 
 function unwrapPromiseResolves(node: t.Node | undefined): t.Node | undefined {
   while (node && isPromiseResolveCall(node)) {
@@ -23,11 +25,11 @@ export default function finalCleanup(path: NodePath<t.Function>): void {
           const value = unwrapPromiseResolves(argument.node)
           if (
             parentPath.isExpressionStatement() &&
-            (!value || !needsAwait(value as any))
+            (!value || !isInTryBlock(path) || !needsAwait(value as any))
           ) {
             parentPath.remove()
           } else if (value) {
-            argument.replaceWith(value)
+            argument.replaceWith(isInTryBlock(path) ? awaited(value) : value)
           }
         }
       },
@@ -36,10 +38,17 @@ export default function finalCleanup(path: NodePath<t.Function>): void {
         const value = argument.isAwaitExpression()
           ? (argument as NodePath<t.AwaitExpression>).get('argument')
           : argument
-        if (value.isCallExpression() && isPromiseResolveCall(value)) {
+        if (value.isIdentifier() && value.node.name === 'undefined') {
+          argument.remove()
+        } else if (value.isCallExpression() && isPromiseResolveCall(value)) {
           const unwrapped = unwrapPromiseResolves(value.node)
-          if (unwrapped) value.replaceWith(unwrapped)
-          else argument.remove()
+          if (unwrapped) {
+            value.replaceWith(
+              isInTryBlock(path) && argument.isAwaitExpression()
+                ? awaited(unwrapped)
+                : unwrapped
+            )
+          } else argument.remove()
         } else if (value.isCallExpression() && isPromiseRejectCall(value)) {
           path.replaceWith(
             t.throwStatement(
@@ -49,7 +58,7 @@ export default function finalCleanup(path: NodePath<t.Function>): void {
               )
             )
           )
-        } else if (argument.isAwaitExpression()) {
+        } else if (argument.isAwaitExpression() && !isInTryBlock(path)) {
           argument.replaceWith(argument.node.argument)
         }
       },

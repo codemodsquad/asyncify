@@ -9,10 +9,11 @@ import unboundIdentifier from './unboundIdentifier'
 import convertBodyToBlockStatement from './convertBodyToBlockStatement'
 import mergeCatchIntoTryFinally from './mergeCatchIntoFinally'
 import { awaited } from './builders'
+import convertConditionalReturns from './convertConditionalReturns'
 
 export default function unwindCatch(
   handler: NodePath<t.Expression>
-): NodePath | NodePath[] {
+): NodePath<any> | NodePath<any>[] {
   const link = handler.parentPath as NodePath<t.CallExpression>
   let preceeding
   if (link.node.arguments.length === 2) {
@@ -37,6 +38,11 @@ export default function unwindCatch(
     ) as any
   }
   const handlerFunction = handler as NodePath<t.Function>
+  const body = handlerFunction.get('body')
+  if (body.isBlockStatement() && !convertConditionalReturns(body)) {
+    return getPreceedingLink(link)
+  }
+
   const input = handlerFunction.get('params')[0]
   if (input) renameBoundIdentifiers(input, link.scope)
   const inputNode = input?.node
@@ -46,19 +52,17 @@ export default function unwindCatch(
     convertBodyToBlockStatement(handlerFunction).node
   )
 
-  handlerFunction
-    .get('body')
-    .replaceWith(
-      t.blockStatement([
-        t.tryStatement(
-          t.blockStatement([t.returnStatement(preceeding)]),
-          catchClause
-        ),
-      ])
-    )
-  const body = handlerFunction.get('body') as NodePath<t.BlockStatement>
-  ;(body.scope as any).crawl()
-  const tryStatement = body.get('body')[0] as NodePath<t.TryStatement>
+  body.replaceWith(
+    t.blockStatement([
+      t.tryStatement(
+        t.blockStatement([t.returnStatement(preceeding)]),
+        catchClause
+      ),
+    ])
+  )
+  const finalBody = handlerFunction.get('body') as NodePath<t.BlockStatement>
+  ;(finalBody.scope as any).crawl()
+  const tryStatement = finalBody.get('body')[0] as NodePath<t.TryStatement>
   const merged = mergeCatchIntoTryFinally(link, tryStatement)
-  return merged || (replaceLink(link, body) as any)
+  return merged || (replaceLink(link, finalBody) as any)
 }

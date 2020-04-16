@@ -14,7 +14,10 @@ import replaceWithImmediatelyInvokedAsyncArrowFunction from './replaceWithImmedi
 export default function unwindPromiseChain(
   path: NodePath<t.CallExpression>
 ): void {
-  if (!path.parentPath.isAwaitExpression()) {
+  if (
+    !path.parentPath.isAwaitExpression() &&
+    !path.parentPath.isReturnStatement()
+  ) {
     path = replaceWithImmediatelyInvokedAsyncArrowFunction(path)[1]
   }
 

@@ -3,6 +3,7 @@ import traverse, { NodePath } from '@babel/traverse'
 import * as t from '@babel/types'
 import asyncify from './asyncify'
 import * as recast from 'recast'
+import generate from '@babel/generator'
 
 module.exports = function index(
   fileInfo: FileInfo,

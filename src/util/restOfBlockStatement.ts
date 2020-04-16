@@ -2,7 +2,6 @@ import * as t from '@babel/types'
 import { NodePath } from '@babel/traverse'
 
 import parentStatement from './parentStatement'
-import dump from './dump'
 
 export default function restOfBlockStatement(
   path: NodePath<any>

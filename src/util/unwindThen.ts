@@ -12,7 +12,7 @@ import convertConditionalReturns from './convertConditionalReturns'
 
 export function unwindThen(
   handler: NodePath<t.Expression>
-): NodePath | NodePath[] {
+): NodePath<any> | NodePath<any>[] {
   const link = handler.parentPath as NodePath<t.CallExpression>
   const preceeding = awaited(getPreceedingLink(link).node)
 
@@ -25,10 +25,7 @@ export function unwindThen(
     const input = handlerFunction.get('params')[0]
     const body = handlerFunction.get('body')
     if (body.isBlockStatement() && !convertConditionalReturns(body)) {
-      return replaceLink(
-        link,
-        t.callExpression(handler.node, [preceeding])
-      ) as any
+      return getPreceedingLink(link)
     }
 
     if (input) renameBoundIdentifiers(input, link.scope)

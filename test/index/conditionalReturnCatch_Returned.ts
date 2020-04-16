@@ -23,9 +23,9 @@ async function createUser(args) {
   try {
     const user = await Users.create({ username })
     if (groups) {
-      return addUserToGroups(user, groups)
+      return await addUserToGroups(user, groups)
     } else {
-      return user
+      return await user
     }
   } catch (err) {
     console.error(err.stack)

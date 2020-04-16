@@ -12,7 +12,7 @@ export const options = {}
 export const expected = `
 async function foo() {
   try {
-    return baz
+    return await baz
   } catch (value) {
     if (value instanceof Blargh) return processBlargh(value)
     else return processOther(value)
