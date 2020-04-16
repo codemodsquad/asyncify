@@ -21,9 +21,7 @@ export const expected = `
 async function createUser(args) {
   const {username, organizationId} = args
   try {
-    const user = await Users.create({
-      username,
-    })
+    const user = await Users.create({ username })
     return addUserToOrganization(user, organizationId)
   }
   catch (err) {

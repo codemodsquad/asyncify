@@ -139,6 +139,7 @@
     "prettier-eslint": "^8.8.2",
     "print-highlighted-ast": "^1.0.0",
     "promisify-child-process": "^3.1.4",
+    "recast": "^0.19.0",
     "require-glob": "^3.2.0",
     "rimraf": "^2.6.0",
     "semantic-release": "^15.1.4",

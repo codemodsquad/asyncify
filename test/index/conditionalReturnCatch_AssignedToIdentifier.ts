@@ -34,9 +34,7 @@ async function createUser(args) {
   let user
   try {
     let user0
-    const user1 = await Users.create({
-      username
-    })
+    const user1 = await Users.create({ username })
     if (groups) {
       user0 = await addUserToGroups(user1, groups)
     } else if (foo) {

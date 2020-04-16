@@ -8,6 +8,7 @@ import findPromiseChains from './util/findPromiseChains'
 import unwindPromiseChain from './util/unwindPromiseChain'
 import finalCleanup from './util/finalCleanup'
 import codeLength from './util/codeLength'
+import babelBugWorkarounds from './util/babelBugWorkarounds'
 
 function asyncifyFunction(path: NodePath<t.Function>): void {
   if (returnsOrAwaitsPromises(path) || isPromiseHandler(path)) {
@@ -19,7 +20,10 @@ function asyncifyFunction(path: NodePath<t.Function>): void {
     if (codeLength(chain) < ignoreChainsShorterThan) continue
     unwindPromiseChain(chain)
   }
-  if (chains.length || path.node.async) finalCleanup(path)
+  if (chains.length || path.node.async) {
+    finalCleanup(path)
+    babelBugWorkarounds(path)
+  }
 }
 
 export default function asyncify(path: NodePath<any>): void {

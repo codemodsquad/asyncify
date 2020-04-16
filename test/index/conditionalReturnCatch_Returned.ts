@@ -21,9 +21,7 @@ export const expected = `
 async function createUser(args) {
   const {username, groups} = args
   try {
-    const user = await Users.create({
-      username
-    })
+    const user = await Users.create({ username })
     if (groups) {
       return addUserToGroups(user, groups)
     } else {
