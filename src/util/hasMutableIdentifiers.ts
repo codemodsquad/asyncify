@@ -5,6 +5,10 @@ export default function hasMutableIdentifiers<T extends t.PatternLike>(
   path: NodePath<T>
 ): boolean {
   let result = false
+  if (path.isIdentifier()) {
+    const binding = path.scope.getBinding(path.node.name)
+    return !binding?.constant
+  }
   path.traverse(
     {
       Identifier(path: NodePath<t.Identifier>) {
