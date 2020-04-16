@@ -14,6 +14,9 @@ exports.isPromiseRejectCall = isPromiseRejectCall;
 exports.needsAwait = needsAwait;
 exports.isIdentifierDeclarator = isIdentifierDeclarator;
 exports.isIdentifierAssignmentExpression = isIdentifierAssignmentExpression;
+exports.isInSwitchCase = isInSwitchCase;
+exports.isInLoop = isInLoop;
+exports.isInTryBlock = isInTryBlock;
 
 var t = _interopRequireWildcard(require("@babel/types"));
 
@@ -70,4 +73,42 @@ function isIdentifierDeclarator(path) {
 
 function isIdentifierAssignmentExpression(path) {
   return path.isAssignmentExpression() && path.get('left').isIdentifier();
+}
+
+function isInSwitchCase(path) {
+  var parentPath = path.parentPath;
+
+  while (parentPath && !parentPath.isFunction()) {
+    if (parentPath.isSwitchCase()) return true;
+    var _parentPath = parentPath;
+    parentPath = _parentPath.parentPath;
+  }
+
+  return false;
+}
+
+function isInLoop(path) {
+  var parentPath = path.parentPath;
+
+  while (parentPath && !parentPath.isFunction()) {
+    if (parentPath.isLoop()) return true;
+    var _parentPath2 = parentPath;
+    parentPath = _parentPath2.parentPath;
+  }
+
+  return false;
+}
+
+function isInTryBlock(path) {
+  var _path = path,
+      parentPath = _path.parentPath;
+
+  while (parentPath && !parentPath.isFunction()) {
+    if (parentPath.isTryStatement() && parentPath.get('block') === path) return true;
+    path = parentPath;
+    var _path2 = path;
+    parentPath = _path2.parentPath;
+  }
+
+  return false;
 }

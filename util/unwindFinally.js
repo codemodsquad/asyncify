@@ -25,6 +25,8 @@ var _replaceReturnStatements = _interopRequireDefault(require("./replaceReturnSt
 
 var _convertBodyToBlockStatement = _interopRequireDefault(require("./convertBodyToBlockStatement"));
 
+var _convertConditionalReturns = _interopRequireDefault(require("./convertConditionalReturns"));
+
 function unwindFinally(handler) {
   var link = handler.parentPath;
   var preceeding = (0, _builders.awaited)((0, _getPreceedingLink["default"])(link).node);
@@ -44,7 +46,16 @@ function unwindFinally(handler) {
   }
 
   var handlerFunction = handler;
-  handlerFunction.get('body').replaceWith(t.blockStatement([t.tryStatement(t.blockStatement([t.returnStatement(preceeding)]), null, (0, _replaceReturnStatements["default"])((0, _convertBodyToBlockStatement["default"])(handlerFunction), _builders.awaited).node)]));
-  handlerFunction.get('body').scope.crawl();
-  return (0, _replaceLink["default"])(link, handlerFunction.get('body'));
+  var body = handlerFunction.get('body');
+
+  if (body.isBlockStatement() && !(0, _convertConditionalReturns["default"])(body)) {
+    return (0, _getPreceedingLink["default"])(link);
+  }
+
+  body.replaceWith(t.blockStatement([t.tryStatement(t.blockStatement([t.returnStatement(preceeding)]), null, (0, _replaceReturnStatements["default"])((0, _convertBodyToBlockStatement["default"])(handlerFunction), function (argument) {
+    return (0, _predicates.isNullish)(argument) ? null : t.expressionStatement((0, _builders.awaited)(argument));
+  }).node)]));
+  var finalBody = handlerFunction.get('body');
+  finalBody.scope.crawl();
+  return (0, _replaceLink["default"])(link, finalBody);
 }

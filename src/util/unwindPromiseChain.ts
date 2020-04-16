@@ -16,7 +16,8 @@ export default function unwindPromiseChain(
 ): void {
   if (
     !path.parentPath.isAwaitExpression() &&
-    !path.parentPath.isReturnStatement()
+    !path.parentPath.isReturnStatement() &&
+    !path.parentPath.isFunction()
   ) {
     path = replaceWithImmediatelyInvokedAsyncArrowFunction(path)[1]
   }

@@ -59,7 +59,7 @@ function findOnlyFinalReturn(
 export default function replaceLink<T extends t.Expression | t.BlockStatement>(
   link: NodePath<t.CallExpression>,
   replacement: t.Expression | NodePath<T>
-): NodePath | NodePath[] {
+): NodePath<any> | NodePath<any>[] {
   if (!(replacement instanceof NodePath)) {
     const { parentPath } = link
     return (parentPath.isAwaitExpression() ? parentPath : link).replaceWith(
@@ -81,7 +81,11 @@ export default function replaceLink<T extends t.Expression | t.BlockStatement>(
       target.replaceWith(awaited(value))
       return output
     }
-    if (target.isReturnStatement()) {
+    if (target.parentPath.isFunction()) {
+      ;(target.parentPath as NodePath<t.Function>)
+        .get('body')
+        .replaceWith(t.blockStatement(replacement.node.body))
+    } else if (target.isReturnStatement()) {
       if (isInTryBlock(target)) {
         replaceReturnStatements(replacement, argument =>
           t.returnStatement(awaited(argument))
@@ -123,11 +127,23 @@ export default function replaceLink<T extends t.Expression | t.BlockStatement>(
           t.assignmentExpression('=', result, awaited(argument))
         )
       )
-      const output = parentStatement(target).insertBefore(
-        replacement.node.body
-      ) as any
-      target.replaceWith(result)
-      return output
+
+      if (target.parentPath.isFunction()) {
+        return (target.parentPath as NodePath<t.Function>)
+          .get('body')
+          .replaceWith(
+            t.blockStatement([
+              ...replacement.node.body,
+              t.returnStatement(result),
+            ])
+          ) as any
+      } else {
+        const output = parentStatement(target).insertBefore(
+          replacement.node.body
+        ) as any
+        target.replaceWith(result)
+        return output
+      }
     }
   } else {
     const { parentPath } = link

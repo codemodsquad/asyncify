@@ -86,17 +86,8 @@ function addRestToAlternate(path) {
 
 function convertConditionalReturns(parent) {
   var isUnwindable = true;
-  var ifDepth = 0;
   var returnStatements = [];
   parent.traverse({
-    IfStatement: {
-      enter: function enter() {
-        ifDepth++;
-      },
-      exit: function exit() {
-        ifDepth--;
-      }
-    },
     ReturnStatement: function (_ReturnStatement) {
       function ReturnStatement(_x) {
         return _ReturnStatement.apply(this, arguments);
@@ -108,16 +99,14 @@ function convertConditionalReturns(parent) {
 
       return ReturnStatement;
     }(function (path) {
-      if (ifDepth > 1 || !isLastStatementInBlock(path)) {
-        isUnwindable = false;
-        path.stop();
-        return;
-      }
-
       var parentPath = path.parentPath;
+      var ifDepth = 0;
+      var loopDepth = 0;
 
       while (parentPath && parentPath !== parent) {
-        if (parentPath.isLoop() || parentPath.isSwitchCase() || parentPath.isTryStatement()) {
+        if (parentPath.isIfStatement()) ifDepth++;else if (parentPath.isLoop()) loopDepth++;
+
+        if (loopDepth > 1 || !isLastStatementInBlock(parentPath) && (!parentPath.isIfStatement() || ifDepth > 1)) {
           isUnwindable = false;
           path.stop();
           return;

@@ -43,7 +43,7 @@ function unwindThen(handler) {
     var body = handlerFunction.get('body');
 
     if (body.isBlockStatement() && !(0, _convertConditionalReturns["default"])(body)) {
-      return (0, _replaceLink["default"])(link, t.callExpression(handler.node, [preceeding]));
+      return (0, _getPreceedingLink["default"])(link);
     }
 
     if (input) (0, _renameBoundIdentifiers["default"])(input, link.scope);

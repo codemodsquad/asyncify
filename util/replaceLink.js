@@ -131,9 +131,12 @@ function replaceLink(link, replacement) {
     }
 
     if (target.isReturnStatement()) {
-      (0, _replaceReturnStatements["default"])(replacement, function (argument) {
-        return t.returnStatement((0, _builders.awaited)(argument));
-      });
+      if ((0, _predicates.isInTryBlock)(target)) {
+        (0, _replaceReturnStatements["default"])(replacement, function (argument) {
+          return t.returnStatement((0, _builders.awaited)(argument));
+        });
+      }
+
       return target.replaceWithMultiple(replacement.node.body);
     } else if (target.isExpressionStatement()) {
       (0, _replaceReturnStatements["default"])(replacement, function (argument) {

@@ -9,6 +9,8 @@ exports["default"] = replaceReturnStatements;
 
 var t = _interopRequireWildcard(require("@babel/types"));
 
+var _predicates = require("./predicates");
+
 function replaceReturnStatements(path, getReplacement) {
   path.traverse({
     ReturnStatement: function (_ReturnStatement) {
@@ -24,11 +26,23 @@ function replaceReturnStatements(path, getReplacement) {
     }(function (path) {
       var replacement = getReplacement(path.node.argument || t.identifier('undefined'));
 
-      if (replacement.type === 'ReturnStatement') {
+      if (!replacement) {
+        if ((0, _predicates.isInLoop)(path) || (0, _predicates.isInSwitchCase)(path)) {
+          path.replaceWith(t.breakStatement());
+        } else {
+          path.remove();
+        }
+      } else if (replacement.type === 'ReturnStatement') {
         var _ref = replacement,
-            argument = _ref.argument;
-        if (argument) path.get('argument').replaceWith(argument);else path.get('argument').remove();
-      } else path.replaceWith(replacement);
+            _argument = _ref.argument;
+        if (_argument) path.get('argument').replaceWith(_argument);else path.get('argument').remove();
+      } else {
+        if ((0, _predicates.isInLoop)(path) || (0, _predicates.isInSwitchCase)(path)) {
+          path.replaceWithMultiple([replacement, t.breakStatement()]);
+        } else {
+          path.replaceWith(replacement);
+        }
+      }
     }),
     Function: function (_Function) {
       function Function(_x2) {

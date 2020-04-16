@@ -29,6 +29,8 @@ var _mergeCatchIntoFinally = _interopRequireDefault(require("./mergeCatchIntoFin
 
 var _builders = require("./builders");
 
+var _convertConditionalReturns = _interopRequireDefault(require("./convertConditionalReturns"));
+
 function unwindCatch(handler) {
   var link = handler.parentPath;
   var preceeding;
@@ -54,15 +56,21 @@ function unwindCatch(handler) {
   }
 
   var handlerFunction = handler;
+  var body = handlerFunction.get('body');
+
+  if (body.isBlockStatement() && !(0, _convertConditionalReturns["default"])(body)) {
+    return (0, _getPreceedingLink["default"])(link);
+  }
+
   var input = handlerFunction.get('params')[0];
   if (input) (0, _renameBoundIdentifiers["default"])(input, link.scope);
   var inputNode = input === null || input === void 0 ? void 0 : input.node;
   if (input) input.remove();
   var catchClause = t.catchClause(inputNode || (0, _unboundIdentifier["default"])(handler, 'err'), (0, _convertBodyToBlockStatement["default"])(handlerFunction).node);
-  handlerFunction.get('body').replaceWith(t.blockStatement([t.tryStatement(t.blockStatement([t.returnStatement(preceeding)]), catchClause)]));
-  var body = handlerFunction.get('body');
-  body.scope.crawl();
-  var tryStatement = body.get('body')[0];
+  body.replaceWith(t.blockStatement([t.tryStatement(t.blockStatement([t.returnStatement(preceeding)]), catchClause)]));
+  var finalBody = handlerFunction.get('body');
+  finalBody.scope.crawl();
+  var tryStatement = finalBody.get('body')[0];
   var merged = (0, _mergeCatchIntoFinally["default"])(link, tryStatement);
-  return merged || (0, _replaceLink["default"])(link, body);
+  return merged || (0, _replaceLink["default"])(link, finalBody);
 }
