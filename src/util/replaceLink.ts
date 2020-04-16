@@ -67,12 +67,21 @@ export default function replaceLink<T extends t.Expression | t.BlockStatement>(
     ) as any
   }
   if (replacement.isBlockStatement()) {
-    const target = findReplaceTarget(link)
     renameBoundIdentifiers(replacement, link.scope)
     const onlyFinalReturn = findOnlyFinalReturn(replacement)
     if (onlyFinalReturn) {
       const value = onlyFinalReturn.node.argument || t.identifier('undefined')
       onlyFinalReturn.remove()
+      if (link.parentPath.isFunction()) {
+        return (link.parentPath as NodePath<t.Function>)
+          .get('body')
+          .replaceWith(
+            t.blockStatement([
+              ...replacement.node.body,
+              t.returnStatement(awaited(value)),
+            ])
+          ) as any
+      }
       const output = parentStatement(link).insertBefore(
         replacement.node.body
       ) as any
@@ -81,10 +90,11 @@ export default function replaceLink<T extends t.Expression | t.BlockStatement>(
       target.replaceWith(awaited(value))
       return output
     }
+    const target = findReplaceTarget(link)
     if (target.parentPath.isFunction()) {
-      ;(target.parentPath as NodePath<t.Function>)
+      return (target.parentPath as NodePath<t.Function>)
         .get('body')
-        .replaceWith(t.blockStatement(replacement.node.body))
+        .replaceWith(t.blockStatement(replacement.node.body)) as any
     } else if (target.isReturnStatement()) {
       if (isInTryBlock(target)) {
         replaceReturnStatements(replacement, argument =>
