@@ -23,7 +23,6 @@ function asyncifyFunction(path: NodePath<t.Function>): void {
   if (chains.length || path.node.async) {
     finalCleanup(path)
     babelBugWorkarounds(path)
-    recastBugWorkarounds(path)
   }
 }
 

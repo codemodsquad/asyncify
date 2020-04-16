@@ -3,7 +3,7 @@ import traverse, { NodePath } from '@babel/traverse'
 import * as t from '@babel/types'
 import asyncify from './asyncify'
 import * as recast from 'recast'
-import generate from '@babel/generator'
+import recastBugWorkarounds from './util/recastBugWorkarounds'
 
 module.exports = function index(
   fileInfo: FileInfo,
@@ -30,5 +30,6 @@ module.exports = function index(
   )
   if (!program) throw new Error('failed to find Program node')
   asyncify(program)
+  recastBugWorkarounds(program)
   return recast.print(ast).code
 }
