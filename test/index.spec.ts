@@ -11,29 +11,9 @@ import convertConditionalReturns from '../src/util/convertConditionalReturns'
 import dump from './dump'
 global.dump = dump
 
-describe('index', function() {
+describe('asyncify', function() {
   testFixtures({
-    glob: path.join(__dirname, 'index', '*.ts'),
+    glob: path.join(__dirname, 'fixtures', '*.ts'),
     transform: require(`../src`),
-  })
-})
-describe('convertConditionalReturns', function() {
-  testFixtures({
-    glob: path.join(__dirname, 'convertConditionalReturns', '*.ts'),
-    transform: function convertConditionalReturnsTransform(
-      fileInfo: FileInfo
-    ): string | null | undefined | void {
-      const ast = parse(fileInfo.source)
-
-      traverse(ast, {
-        Function(path: NodePath<t.Function>) {
-          const body = path.get('body')
-          if (body.isBlockStatement()) convertConditionalReturns(body)
-          path.stop()
-        },
-      })
-
-      return generate(ast as any).code
-    },
   })
 })
