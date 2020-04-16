@@ -58,30 +58,6 @@ function findOnlyFinalReturn(
   return last.isReturnStatement() ? last : null
 }
 
-function replaceBlockParent(
-  path: NodePath<any>,
-  replacement: t.BlockStatement
-): NodePath<any> | NodePath<any>[] {
-  const { parentPath } = path
-  if (parentPath.isFunction() || parentPath.isLoop()) {
-    return (parentPath as NodePath<t.Function | t.Loop>)
-      .get('body')
-      .replaceWith(replacement) as any
-  }
-  if (parentPath.isIfStatement()) {
-    if (path === parentPath.get('consequent')) {
-      return (parentPath as NodePath<t.IfStatement>)
-        .get('consequent')
-        .replaceWith(replacement) as any
-    } else if (path === parentPath.get('alternate')) {
-      return (parentPath as NodePath<t.IfStatement>)
-        .get('alternate')
-        .replaceWith(replacement) as any
-    }
-  }
-  throw new Error('failed to replace BlockParent')
-}
-
 export default function replaceLink<T extends t.Expression | t.BlockStatement>(
   link: NodePath<t.CallExpression>,
   replacement: t.Expression | NodePath<T>
