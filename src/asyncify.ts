@@ -8,7 +8,6 @@ import unwindPromiseChain from './util/unwindPromiseChain'
 import finalCleanup from './util/finalCleanup'
 import codeLength from './util/codeLength'
 import babelBugWorkarounds from './util/babelBugWorkarounds'
-import recastBugWorkarounds from './util/recastBugWorkarounds'
 
 function asyncifyFunction(path: NodePath<t.Function>): void {
   if (returnsOrAwaitsPromises(path) || isPromiseHandler(path)) {
