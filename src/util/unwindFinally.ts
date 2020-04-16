@@ -8,6 +8,7 @@ import replaceLink from './replaceLink'
 import replaceReturnStatements from './replaceReturnStatements'
 import convertBodyToBlockStatement from './convertBodyToBlockStatement'
 import convertConditionalReturns from './convertConditionalReturns'
+import mergeStatementsIntoTryFinally from './mergeStatementsIntoTryFinally'
 
 export default function unwindFinally(
   handler: NodePath<t.Expression>
@@ -47,5 +48,9 @@ export default function unwindFinally(
   )
   const finalBody = handlerFunction.get('body')
   ;(finalBody.scope as any).crawl()
-  return replaceLink(link, finalBody) as any
+  const tryStatement = finalBody.get('body')[0] as NodePath<t.TryStatement>
+  return (
+    mergeStatementsIntoTryFinally(link, tryStatement) ||
+    (replaceLink(link, finalBody) as any)
+  )
 }

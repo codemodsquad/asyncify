@@ -63,6 +63,8 @@ export default function unwindCatch(
   const finalBody = handlerFunction.get('body') as NodePath<t.BlockStatement>
   ;(finalBody.scope as any).crawl()
   const tryStatement = finalBody.get('body')[0] as NodePath<t.TryStatement>
-  const merged = mergeCatchIntoTryFinally(link, tryStatement)
-  return merged || (replaceLink(link, finalBody) as any)
+  return (
+    mergeCatchIntoTryFinally(link, tryStatement) ||
+    (replaceLink(link, finalBody) as any)
+  )
 }
