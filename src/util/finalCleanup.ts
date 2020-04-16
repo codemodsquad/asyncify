@@ -25,7 +25,7 @@ export default function finalCleanup(path: NodePath<t.Function>): void {
           const value = unwrapPromiseResolves(argument.node)
           if (
             parentPath.isExpressionStatement() &&
-            (!value || !isInTryBlock(path) || !needsAwait(value as any))
+            (!value || (!isInTryBlock(path) && !needsAwait(value as any)))
           ) {
             parentPath.remove()
           } else if (value) {

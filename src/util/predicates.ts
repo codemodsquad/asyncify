@@ -73,7 +73,6 @@ export function needsAwait<T extends t.Expression>(node: T): boolean {
     t.isObjectExpression(node) ||
     t.isFunctionExpression(node) ||
     t.isArrowFunctionExpression(node) ||
-    t.isNewExpression(node) ||
     t.isBinaryExpression(node) ||
     t.isUnaryExpression(node) ||
     t.isThisExpression(node) ||
