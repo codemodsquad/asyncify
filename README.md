@@ -6,18 +6,27 @@
 [![Commitizen friendly](https://img.shields.io/badge/commitizen-friendly-brightgreen.svg)](http://commitizen.github.io/cz-cli/)
 [![npm version](https://badge.fury.io/js/%40codemodsquad%2Fasyncify.svg)](https://badge.fury.io/js/%40codemodsquad%2Fasyncify)
 
-transforms promise chains into async/await (work in progress)
+Transforms promise chains into `async`/`await`. I wrote this to refactor the 5000+ `.then`/`.catch`/`.finally` calls in the
+`sequelize` codebase. This is slightly inspired by [async-await-codemod](https://github.com/sgilroy/async-await-codemod),
+but written from scratch to guarantee the same behavior and tidy code as best as I can manage.
 
-# Support table
+## Usage
 
-|                                                                       | `asyncify` (planned) | `async-await-codemod` |
-| --------------------------------------------------------------------- | -------------------- | --------------------- |
-| Renames identifiers in handlers that would conflict                   | ✅                   | 🚫                    |
-| Converts promise chains that aren't returned/awaited into async IIFEs | ✅                   | 🚫                    |
-| Converts `return Promise.resolve()`/`return Promise.reject()`         | ✅                   | 🚫                    |
-| Warns when the original function could return/throw a non-promise     | ✅                   | 🚫                    |
-| **Refactoring/inlining handlers that contain conditional returns**    |                      |                       |
-| All but one if/else/switch branch return                              | ✅                   | 🚫                    |
-| All but one nested if/else/switch branch return                       | ❓                   | 🚫                    |
-| More than one if/else/switch branch doesn't return                    | 🚫                   | 🚫                    |
-| Return inside loop                                                    | 🚫                   | 🚫                    |
+```
+git clone https://github.com/codemodsquad/asyncify
+npx jscodeshift -t asyncify/index.js path/to/your/project/**/*.js
+```
+
+## Support table
+
+|                                                                    | `asyncify` | `async-await-codemod` |
+| ------------------------------------------------------------------ | ---------- | --------------------- |
+| Renames identifiers in handlers that would conflict                | ✅         | 🚫                    |
+| Converts promise chains that aren't returned/awaited into IIAAFs   | ✅         | 🚫                    |
+| Converts `return Promise.resolve()`/`return Promise.reject()`      | ✅         | 🚫                    |
+| Warns when the original function could return/throw a non-promise  | ✅         | 🚫                    |
+| **Refactoring/inlining handlers that contain conditional returns** |            |                       |
+| All but one if/else/switch branch return                           | ✅         | 🚫                    |
+| All but one nested if/else/switch branch return                    | ❓         | 🚫                    |
+| More than one if/else/switch branch doesn't return                 | 🚫         | 🚫                    |
+| Return inside loop                                                 | 🚫         | 🚫                    |
