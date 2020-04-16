@@ -47,6 +47,15 @@ export default function unwindCatch(
   if (input) renameBoundIdentifiers(input, link.scope)
   const inputNode = input?.node
   if (input) input.remove()
+  if (
+    inputNode?.type === 'AssignmentPattern' ||
+    inputNode?.type === 'RestElement' ||
+    inputNode?.type === 'TSParameterProperty'
+  ) {
+    throw new Error(
+      'TODO: these catch parameter node types are not supported yet'
+    )
+  }
   const catchClause = t.catchClause(
     inputNode || unboundIdentifier(handler, 'err'),
     convertBodyToBlockStatement(handlerFunction).node

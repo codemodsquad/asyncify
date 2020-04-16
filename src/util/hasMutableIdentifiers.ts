@@ -1,9 +1,9 @@
 import * as t from '@babel/types'
 import { NodePath } from '@babel/traverse'
 
-export default function hasMutableIdentifiers<T extends t.PatternLike>(
-  path: NodePath<T>
-): boolean {
+export default function hasMutableIdentifiers<
+  T extends t.PatternLike | t.TSParameterProperty
+>(path: NodePath<T>): boolean {
   let result = false
   if (path.isIdentifier()) {
     const binding = path.scope.getBinding(path.node.name)

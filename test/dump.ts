@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import * as t from '@babel/types'
 import { NodePath } from '@babel/traverse'
 import generate from '@babel/generator'

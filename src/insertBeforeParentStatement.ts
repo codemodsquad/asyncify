@@ -4,7 +4,7 @@ import parentStatement from './util/parentStatement'
 import convertBodyToBlockStatement from './util/convertBodyToBlockStatement'
 
 export default function insertBeforeParentStatement<
-  Nodes extends Node | Node[]
+  Nodes extends t.Node | t.Node[]
 >(path: NodePath<any>, nodes: Nodes): NodePaths<Nodes> {
   const statement = parentStatement(path)
   if (statement.parentPath.isFunction()) {

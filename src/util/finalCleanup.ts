@@ -8,11 +8,13 @@ import {
 } from './predicates'
 import { awaited } from './builders'
 
-function unwrapPromiseResolves(node: t.Node | undefined): t.Node | undefined {
+function unwrapPromiseResolves(
+  node: t.Node | undefined
+): t.Expression | undefined {
   while (node && isPromiseResolveCall(node)) {
     node = (node as t.CallExpression).arguments[0]
   }
-  return node
+  return node as t.Expression
 }
 
 export default function finalCleanup(path: NodePath<t.Function>): void {

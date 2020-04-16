@@ -18,8 +18,7 @@ export default function mergeStatementsIntoTryFinally<T extends t.Node>(
   if (!parent.isTryStatement() || !parent.node.finalizer) return null
   const { finalizer, block } = tryStatement.node
   if (!finalizer || !block || block.type !== 'BlockStatement') return null
-  ;(parent as NodePath<t.TryStatement>)
-    .get('finalizer')
-    .unshiftContainer('body', finalizer.body)
+  const destFinalizer = parent.get('finalizer') as NodePath<t.BlockStatement>
+  destFinalizer.unshiftContainer('body', finalizer.body)
   return statement.replaceWithMultiple(block.body) as any
 }

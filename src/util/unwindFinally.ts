@@ -48,7 +48,7 @@ export default function unwindFinally(
   )
   const finalBody = handlerFunction.get('body')
   ;(finalBody.scope as any).crawl()
-  const tryStatement = finalBody.get('body')[0] as NodePath<t.TryStatement>
+  const tryStatement = finalBody.get('body.0') as NodePath<t.TryStatement>
   return (
     mergeStatementsIntoTryFinally(link, tryStatement) ||
     (replaceLink(link, finalBody) as any)
