@@ -1,6 +1,8 @@
 import * as t from '@babel/types'
 import { NodePath } from '@babel/traverse'
 import { isInSwitchCase, isInLoop } from './predicates'
+import replaceWithStatements from './replaceWithStatements'
+import parentStatement from './parentStatement'
 
 export default function replaceReturnStatements<T extends t.Statement>(
   path: NodePath<t.BlockStatement>,
@@ -24,7 +26,10 @@ export default function replaceReturnStatements<T extends t.Statement>(
           else path.get('argument').remove()
         } else {
           if (isInLoop(path) || isInSwitchCase(path)) {
-            path.replaceWithMultiple([replacement, t.breakStatement()])
+            replaceWithStatements(parentStatement(path), [
+              replacement,
+              t.breakStatement(),
+            ])
           } else {
             path.replaceWith(replacement)
           }

@@ -12,6 +12,8 @@ import unboundIdentifier from './unboundIdentifier'
 import replaceReturnStatements from './replaceReturnStatements'
 import { awaited } from './builders'
 import parentStatement from './parentStatement'
+import insertStatementsBefore from './insertStatementsBefore'
+import replaceWithStatements from './replaceWithStatements'
 
 function findReplaceTarget<T extends t.Node>(link: NodePath<T>): NodePath<any> {
   const { parentPath } = link
@@ -56,6 +58,30 @@ function findOnlyFinalReturn(
   return last.isReturnStatement() ? last : null
 }
 
+function replaceBlockParent(
+  path: NodePath<any>,
+  replacement: t.BlockStatement
+): NodePath<any> | NodePath<any>[] {
+  const { parentPath } = path
+  if (parentPath.isFunction() || parentPath.isLoop()) {
+    return (parentPath as NodePath<t.Function | t.Loop>)
+      .get('body')
+      .replaceWith(replacement) as any
+  }
+  if (parentPath.isIfStatement()) {
+    if (path === parentPath.get('consequent')) {
+      return (parentPath as NodePath<t.IfStatement>)
+        .get('consequent')
+        .replaceWith(replacement) as any
+    } else if (path === parentPath.get('alternate')) {
+      return (parentPath as NodePath<t.IfStatement>)
+        .get('alternate')
+        .replaceWith(replacement) as any
+    }
+  }
+  throw new Error('failed to replace BlockParent')
+}
+
 export default function replaceLink<T extends t.Expression | t.BlockStatement>(
   link: NodePath<t.CallExpression>,
   replacement: t.Expression | NodePath<T>
@@ -72,41 +98,30 @@ export default function replaceLink<T extends t.Expression | t.BlockStatement>(
     if (onlyFinalReturn) {
       const value = onlyFinalReturn.node.argument || t.identifier('undefined')
       onlyFinalReturn.remove()
-      if (link.parentPath.isFunction()) {
-        return (link.parentPath as NodePath<t.Function>)
-          .get('body')
-          .replaceWith(
-            t.blockStatement([
-              ...replacement.node.body,
-              t.returnStatement(awaited(value)),
-            ])
-          ) as any
-      }
-      const output = parentStatement(link).insertBefore(
-        replacement.node.body
-      ) as any
       const { parentPath } = link
       const target = parentPath.isAwaitExpression() ? parentPath : link
       target.replaceWith(awaited(value))
-      return output
+      return insertStatementsBefore(target, replacement.node.body) as any
     }
     const target = findReplaceTarget(link)
-    if (target.parentPath.isFunction()) {
-      return (target.parentPath as NodePath<t.Function>)
-        .get('body')
-        .replaceWith(t.blockStatement(replacement.node.body)) as any
+    if (
+      target.parentPath.isBlockParent() &&
+      !target.parentPath.isBlockStatement()
+    ) {
+      // return replaceBlockParent(target, t.blockStatement(replacement.node.body))
+      return replaceWithStatements(target, replacement.node.body) as any
     } else if (target.isReturnStatement()) {
       if (isInTryBlock(target)) {
         replaceReturnStatements(replacement, argument =>
           t.returnStatement(awaited(argument))
         )
       }
-      return target.replaceWithMultiple(replacement.node.body) as any
+      return replaceWithStatements(target, replacement.node.body) as any
     } else if (target.isExpressionStatement()) {
       replaceReturnStatements(replacement, argument =>
         t.expressionStatement(awaited(argument))
       )
-      return target.replaceWithMultiple(replacement.node.body) as any
+      return replaceWithStatements(target, replacement.node.body) as any
     } else if (target.isVariableDeclaration()) {
       const {
         declarations: [{ id }],
@@ -117,7 +132,7 @@ export default function replaceLink<T extends t.Expression | t.BlockStatement>(
           t.assignmentExpression('=', id, awaited(argument))
         )
       )
-      return target.replaceWithMultiple(replacement.node.body) as any
+      return replaceWithStatements(target, replacement.node.body) as any
     } else if (target.isAssignmentExpression()) {
       const { left, operator } = target.node
       replaceReturnStatements(replacement, argument =>
@@ -137,10 +152,11 @@ export default function replaceLink<T extends t.Expression | t.BlockStatement>(
           t.assignmentExpression('=', result, awaited(argument))
         )
       )
-      const output = parentStatement(target).insertBefore(
+      target.replaceWith(result)
+      const output = insertStatementsBefore(
+        target,
         replacement.node.body
       ) as any
-      target.replaceWith(result)
       return output
     }
   } else {

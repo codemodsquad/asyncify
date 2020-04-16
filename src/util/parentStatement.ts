@@ -6,7 +6,9 @@ export default function parentStatement<T extends t.Node>(
 ): NodePath<t.Statement> {
   return path.find(
     p =>
-      (p.isStatement() && p.parentPath && p.parentPath.isBlockStatement()) ||
-      p.parentPath.isFunction()
+      p.isStatement() ||
+      p.parentPath.isBlockParent() ||
+      p.parentPath.isIfStatement() ||
+      p.parentPath.isSwitchCase()
   ) as NodePath<t.Statement>
 }

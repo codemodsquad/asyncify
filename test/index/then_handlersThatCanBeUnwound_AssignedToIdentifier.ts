@@ -38,9 +38,10 @@ async function f1() {
   let x
   const baz = await bar
   switch (baz) {
-    case 2:
+    case 2: {
       x = 2
       break
+    }
   }
 }
 async function f2() {
