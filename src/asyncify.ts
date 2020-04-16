@@ -14,9 +14,7 @@ function asyncifyFunction(path: NodePath<t.Function>): void {
     path.node.async = true
   }
   const chains = findPromiseChains(path)
-  const { ignoreChainsShorterThan } = path.state
   for (const chain of chains) {
-    if (codeLength(chain) < ignoreChainsShorterThan) continue
     unwindPromiseChain(chain)
   }
   if (chains.length || path.node.async) {

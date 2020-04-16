@@ -2,6 +2,7 @@ import * as t from '@babel/types'
 import { NodePath } from '@babel/traverse'
 
 import { isPromiseMethodCall } from './predicates'
+import shouldIgnoreChain from './shouldIgnoreChain'
 
 export default function findPromiseChains(
   path: NodePath<t.Function>
@@ -11,7 +12,7 @@ export default function findPromiseChains(
     {
       CallExpression(path: NodePath<t.CallExpression>) {
         if (isPromiseMethodCall(path.node)) {
-          chains.push(path)
+          if (!shouldIgnoreChain(path)) chains.push(path)
           path.skip()
         }
       },

@@ -3638,11 +3638,6 @@ find-npm-prefix@^1.0.2:
   resolved "https://registry.yarnpkg.com/find-npm-prefix/-/find-npm-prefix-1.0.2.tgz#8d8ce2c78b3b4b9e66c8acc6a37c231eb841cfdf"
   integrity sha512-KEftzJ+H90x6pcKtdXZEPsQse8/y/UnvzRKrOSQFprnrGaFuJ62fVkP34Iu2IYuMvyauCyoLTNkJZgrrGA2wkA==
 
-find-root@^1.1.0:
-  version "1.1.0"
-  resolved "https://registry.yarnpkg.com/find-root/-/find-root-1.1.0.tgz#abcfc8ba76f708c42a97b3d685b7e9450bfb9ce4"
-  integrity sha512-NKfW6bec6GfKc0SGx1e07QZY9PE99u0Bft/0rzSD5k3sO/vwkVUpDUKVm5Gpp5Ue3YfShPFTX2070tDs5kB9Ng==
-
 find-up@3.0.0, find-up@^3.0.0:
   version "3.0.0"
   resolved "https://registry.yarnpkg.com/find-up/-/find-up-3.0.0.tgz#49169f1d7993430646da61ecc5ae355c21c97b73"
@@ -4499,11 +4494,6 @@ into-stream@^5.0.0:
     from2 "^2.3.0"
     p-is-promise "^3.0.0"
 
-invalidate-require-cache@^1.0.0:
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/invalidate-require-cache/-/invalidate-require-cache-1.0.0.tgz#7be817287ff6adbb6e8e233e7e4a0444af8a540a"
-  integrity sha512-3aVHx42pg3GoimLy81TZoLripzJrgaLgABn8itsN2y0n6ykwO39MQO7WdzzUcul02H+FoGg84VD55ovQveXdZg==
-
 invariant@^2.2.2, invariant@^2.2.4:
   version "2.2.4"
   resolved "https://registry.yarnpkg.com/invariant/-/invariant-2.2.4.tgz#610f3c92c9359ce1db616e538008d23ff35158e6"
@@ -5015,22 +5005,6 @@ jsbn@~0.1.0:
   version "0.1.1"
   resolved "https://registry.yarnpkg.com/jsbn/-/jsbn-0.1.1.tgz#a5e654c2e5a2deb5f201d96cefbca80c0ef2f513"
   integrity sha1-peZUwuWi3rXyAdls77yoDA7y9RM=
-
-jscodeshift-choose-parser@^1.0.1:
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/jscodeshift-choose-parser/-/jscodeshift-choose-parser-1.0.1.tgz#90d44ec6d48320ad9c4cb1f5cf7cb3acf220e3d5"
-  integrity sha512-t14IztZr4Er6AiejYpV3aEOqry0mWLBpGBv8Jzk7amkSBktELcojT9uxsLZeZIHKcXCtt7bLEOleG+6bCLELhg==
-  dependencies:
-    find-root "^1.1.0"
-    invalidate-require-cache "^1.0.0"
-    resolve "^1.15.0"
-
-jscodeshift-paths-in-range@^1.0.0:
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/jscodeshift-paths-in-range/-/jscodeshift-paths-in-range-1.0.0.tgz#534f1c95857601f517b144af1d6718a3e2728693"
-  integrity sha512-0PFCzk5FLlcpUAbfTXHtsE+MqiSqcEMHII2chVbhliguOFo5oQCKiYLexqYwHXfROycOQf8ZFW3gWUSTpgwa1g==
-  dependencies:
-    "@babel/runtime" "^7.1.5"
 
 jscodeshift@^0.7.0:
   version "0.7.0"
@@ -7708,13 +7682,6 @@ resolve@^1.10.0, resolve@^1.12.0, resolve@^1.3.2, resolve@^1.8.1:
   version "1.14.2"
   resolved "https://registry.yarnpkg.com/resolve/-/resolve-1.14.2.tgz#dbf31d0fa98b1f29aa5169783b9c290cb865fea2"
   integrity sha512-EjlOBLBO1kxsUxsKjLt7TAECyKW6fOh1VRkykQkKGzcBbjjPIxBqGh0jf7GJ3k/f5mxMqW3htMD3WdTUVtW8HQ==
-  dependencies:
-    path-parse "^1.0.6"
-
-resolve@^1.15.0:
-  version "1.15.1"
-  resolved "https://registry.yarnpkg.com/resolve/-/resolve-1.15.1.tgz#27bdcdeffeaf2d6244b95bb0f9f4b4653451f3e8"
-  integrity sha512-84oo6ZTtoTUpjgNEr5SJyzQhzL72gaRodsSfyxC/AXRvwu0Yse9H8eF9IpGo7b8YetZhlI6v7ZQ6bKBFV/6S7w==
   dependencies:
     path-parse "^1.0.6"
 

@@ -11,7 +11,6 @@ import renameBoundIdentifiers from './renameBoundIdentifiers'
 import unboundIdentifier from './unboundIdentifier'
 import replaceReturnStatements from './replaceReturnStatements'
 import { awaited } from './builders'
-import parentStatement from './parentStatement'
 import insertStatementsBefore from './insertStatementsBefore'
 import replaceWithStatements from './replaceWithStatements'
 

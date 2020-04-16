@@ -94,6 +94,7 @@
   "homepage": "https://github.com/codemodsquad/asyncify#readme",
   "devDependencies": {
     "@babel/cli": "^7.1.5",
+    "@babel/core": "^7.1.6",
     "@babel/plugin-proposal-class-properties": "^7.1.0",
     "@babel/plugin-proposal-export-default-from": "^7.0.0",
     "@babel/plugin-proposal-export-namespace-from": "^7.0.0",
@@ -142,22 +143,18 @@
     "prettier-eslint": "^8.8.2",
     "print-highlighted-ast": "^1.0.0",
     "promisify-child-process": "^3.1.4",
-    "recast": "^0.19.0",
     "require-glob": "^3.2.0",
     "rimraf": "^2.6.0",
     "semantic-release": "^15.1.4",
     "typescript": "^3.7.2"
   },
   "dependencies": {
-    "@babel/core": "^7.1.6",
+    "@babel/generator": "^7.9.5",
     "@babel/runtime": "^7.1.5",
     "@babel/template": "^7.8.6",
     "@babel/traverse": "^7.9.5",
     "@babel/types": "^7.9.5",
-    "find-root": "^1.1.0",
-    "invalidate-require-cache": "^1.0.0",
-    "jscodeshift-choose-parser": "^1.0.1",
-    "jscodeshift-paths-in-range": "^1.0.0"
+    "recast": "^0.19.0"
   },
   "renovate": {
     "extends": [
