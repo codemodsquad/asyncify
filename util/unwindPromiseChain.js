@@ -26,7 +26,7 @@ var _parentStatement2 = _interopRequireDefault(require("./parentStatement"));
 var _replaceWithImmediatelyInvokedAsyncArrowFunction = _interopRequireDefault(require("./replaceWithImmediatelyInvokedAsyncArrowFunction"));
 
 function unwindPromiseChain(path) {
-  if (!path.parentPath.isAwaitExpression() && !path.parentPath.isReturnStatement()) {
+  if (!path.parentPath.isAwaitExpression() && !path.parentPath.isReturnStatement() && !path.parentPath.isFunction()) {
     path = (0, _replaceWithImmediatelyInvokedAsyncArrowFunction["default"])(path)[1];
   }
 

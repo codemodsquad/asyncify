@@ -127,23 +127,11 @@ export default function replaceLink<T extends t.Expression | t.BlockStatement>(
           t.assignmentExpression('=', result, awaited(argument))
         )
       )
-
-      if (target.parentPath.isFunction()) {
-        return (target.parentPath as NodePath<t.Function>)
-          .get('body')
-          .replaceWith(
-            t.blockStatement([
-              ...replacement.node.body,
-              t.returnStatement(result),
-            ])
-          ) as any
-      } else {
-        const output = parentStatement(target).insertBefore(
-          replacement.node.body
-        ) as any
-        target.replaceWith(result)
-        return output
-      }
+      const output = parentStatement(target).insertBefore(
+        replacement.node.body
+      ) as any
+      target.replaceWith(result)
+      return output
     }
   } else {
     const { parentPath } = link

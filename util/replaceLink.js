@@ -9,6 +9,8 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports["default"] = replaceLink;
 
+var _toConsumableArray2 = _interopRequireDefault(require("@babel/runtime/helpers/toConsumableArray"));
+
 var _taggedTemplateLiteral2 = _interopRequireDefault(require("@babel/runtime/helpers/taggedTemplateLiteral"));
 
 var _slicedToArray2 = _interopRequireDefault(require("@babel/runtime/helpers/slicedToArray"));
@@ -130,7 +132,10 @@ function replaceLink(link, replacement) {
       return output;
     }
 
-    if (target.isReturnStatement()) {
+    if (target.parentPath.isFunction()) {
+      ;
+      target.parentPath.get('body').replaceWith(t.blockStatement(replacement.node.body));
+    } else if (target.isReturnStatement()) {
       if ((0, _predicates.isInTryBlock)(target)) {
         (0, _replaceReturnStatements["default"])(replacement, function (argument) {
           return t.returnStatement((0, _builders.awaited)(argument));
@@ -167,10 +172,14 @@ function replaceLink(link, replacement) {
         return t.expressionStatement(t.assignmentExpression('=', result, (0, _builders.awaited)(argument)));
       });
 
-      var _output = (0, _parentStatement["default"])(target).insertBefore(replacement.node.body);
+      if (target.parentPath.isFunction()) {
+        return target.parentPath.get('body').replaceWith(t.blockStatement([].concat((0, _toConsumableArray2["default"])(replacement.node.body), [t.returnStatement(result)])));
+      } else {
+        var _output = (0, _parentStatement["default"])(target).insertBefore(replacement.node.body);
 
-      target.replaceWith(result);
-      return _output;
+        target.replaceWith(result);
+        return _output;
+      }
     }
   } else {
     var _parentPath2 = link.parentPath;
