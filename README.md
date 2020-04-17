@@ -19,15 +19,15 @@ npx jscodeshift -t asyncify/index.js path/to/your/project/**/*.js
 
 ## Support table
 
-|                                                                    | `asyncify` | `async-await-codemod` |
-| ------------------------------------------------------------------ | ---------- | --------------------- |
-| Renames identifiers in handlers that would conflict                | ✅         | 🚫                    |
-| Converts promise chains that aren't returned/awaited into IIAAFs   | ✅         | 🚫                    |
-| Converts `return Promise.resolve()`/`return Promise.reject()`      | ✅         | 🚫                    |
-| Warns when the original function could return/throw a non-promise  | ✅         | 🚫                    |
-| **Refactoring/inlining handlers that contain conditional returns** |            |                       |
-| All but one if/else/switch branch return                           | ✅         | 🚫                    |
-| All branches return, even nested ones                              | ✅         | ❓(I don't think so?) |
-| All but one nested if/else/switch branch return                    | 🚫         | 🚫                    |
-| More than one if/else/switch branch doesn't return                 | 🚫         | 🚫                    |
-| Return inside loop                                                 | 🚫         | 🚫                    |
+|                                                                    | `asyncify` |
+| ------------------------------------------------------------------ | ---------- |
+| Renames identifiers in handlers that would conflict                | ✅         |
+| Converts promise chains that aren't returned/awaited into IIAAFs   | ✅         |
+| Converts `return Promise.resolve()`/`return Promise.reject()`      | ✅         |
+| Warns when the original function could return/throw a non-promise  | ✅         |
+| **Refactoring/inlining handlers that contain conditional returns** |            |
+| All but one if/else/switch branch return                           | ✅         |
+| All branches return, even nested ones                              | ✅         |
+| All but one nested if/else/switch branch return                    | 🚫         |
+| More than one if/else/switch branch doesn't return                 | 🚫         |
+| Return inside loop                                                 | 🚫         |
