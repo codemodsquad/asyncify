@@ -21,9 +21,9 @@ npx jscodeshift -t asyncify/index.js path/to/your/project/**/*.js
 
 |                                                                    | `asyncify` |
 | ------------------------------------------------------------------ | ---------- |
-| `.then`                                                            | ✅         |
-| `.catch`                                                           | ✅         |
-| `.finally`                                                         | ✅         |
+| Converts `.then`                                                   | ✅         |
+| Converts `.catch`                                                  | ✅         |
+| Converts `.finally`                                                | ✅         |
 | Renames identifiers in handlers that would conflict                | ✅         |
 | Converts promise chains that aren't returned/awaited into IIAAFs   | ✅         |
 | Converts `return Promise.resolve()`/`return Promise.reject()`      | ✅         |
