@@ -27,6 +27,7 @@ npx jscodeshift -t asyncify/index.js path/to/your/project/**/*.js
 | Warns when the original function could return/throw a non-promise  | ✅         | 🚫                    |
 | **Refactoring/inlining handlers that contain conditional returns** |            |                       |
 | All but one if/else/switch branch return                           | ✅         | 🚫                    |
-| All but one nested if/else/switch branch return                    | ❓         | 🚫                    |
+| All branches return, even nested ones                              | ✅         | ❓(I don't think so?) |
+| All but one nested if/else/switch branch return                    | 🚫         | 🚫                    |
 | More than one if/else/switch branch doesn't return                 | 🚫         | 🚫                    |
 | Return inside loop                                                 | 🚫         | 🚫                    |
