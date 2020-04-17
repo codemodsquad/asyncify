@@ -21,10 +21,14 @@ npx jscodeshift -t asyncify/index.js path/to/your/project/**/*.js
 
 |                                                                    | `asyncify` |
 | ------------------------------------------------------------------ | ---------- |
+| `.then`                                                            | ✅         |
+| `.catch`                                                           | ✅         |
+| `.finally`                                                         | ✅         |
 | Renames identifiers in handlers that would conflict                | ✅         |
 | Converts promise chains that aren't returned/awaited into IIAAFs   | ✅         |
 | Converts `return Promise.resolve()`/`return Promise.reject()`      | ✅         |
-| Warns when the original function could return/throw a non-promise  | ✅         |
+| Removes unnecessary `Promise.resolve()` wrappers                   | ✅         |
+| Warns when the original function could return/throw a non-promise  | Planned    |
 | **Refactoring/inlining handlers that contain conditional returns** |            |
 | All but one if/else/switch branch return                           | ✅         |
 | All branches return, even nested ones                              | ✅         |
