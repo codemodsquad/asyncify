@@ -4,18 +4,15 @@ async function createUser(args) {
   const user = await Users.create({username})
     .then(user => {
       if (groups) {
+        console.log('a')
+        return addUserToGroups(user, groups)
+      } else if (foo) {
+        console.log('b')
+      } else {
+        console.log('c')
         return addUserToGroups(user, groups)
       }
-      console.log('blah')
       return user
-    })
-    .then(user => {
-      if (groups) {
-        console.log('test')
-      } else {
-        return 'noGroups'
-      }
-      return 'user'
     })
     .catch(err => {
       console.error(err.stack)
@@ -31,19 +28,16 @@ async function createUser(args) {
   const {username, groups} = args
   let user
   try {
-    let user0
-    const user1 = await Users.create({ username })
+    const user0 = await Users.create({ username })
     if (groups) {
-      user0 = await addUserToGroups(user1, groups)
+      console.log('a')
+      user = await addUserToGroups(user0, groups)
+    } else if (foo) {
+      console.log('b')
+      user = await user0
     } else {
-      console.log('blah')
-      user0 = await user1
-    }
-    if (groups) {
-      console.log('test')
-      user = 'user'
-    } else {
-      user = 'noGroups'
+      console.log('c')
+      user = await addUserToGroups(user0, groups)
     }
   } catch (err) {
     console.error(err.stack)

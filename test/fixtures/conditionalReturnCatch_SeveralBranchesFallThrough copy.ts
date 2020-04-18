@@ -5,6 +5,10 @@ async function createUser(args) {
     .then(user => {
       if (groups) {
         return addUserToGroups(user, groups)
+      } else if (foo) {
+        console.log('test')
+      } else if (bar) {
+        console.log('test2')
       }
       console.log('blah')
       return user
@@ -31,14 +35,17 @@ async function createUser(args) {
   const {username, groups} = args
   let user
   try {
-    let user0
-    const user1 = await Users.create({ username })
-    if (groups) {
-      user0 = await addUserToGroups(user1, groups)
-    } else {
+    const user0 = await Users.create({ username }).then(async user => {
+      if (groups) {
+        return addUserToGroups(user, groups)
+      } else if (foo) {
+        console.log('test')
+      } else if (bar) {
+        console.log('test2')
+      }
       console.log('blah')
-      user0 = await user1
-    }
+      return user
+    })
     if (groups) {
       console.log('test')
       user = 'user'

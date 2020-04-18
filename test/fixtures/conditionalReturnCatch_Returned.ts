@@ -24,9 +24,8 @@ async function createUser(args) {
     const user = await Users.create({ username })
     if (groups) {
       return await addUserToGroups(user, groups)
-    } else {
-      return await user
     }
+    return await user
   } catch (err) {
     console.error(err.stack)
     return dummyUser()

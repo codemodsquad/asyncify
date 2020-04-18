@@ -5,7 +5,7 @@ function foo() {
       case 2: return
     }
     console.log('test')
-  })
+  }).then(String)
 }
 function bar() {
   return a.finally(() => {
@@ -13,7 +13,7 @@ function bar() {
       return
     }
     console.log('test')
-  })
+  }).then(String)
 }
 function qux() {
   return a.finally(() => {
@@ -21,7 +21,7 @@ function qux() {
       return
     }
     console.log('test')
-  })
+  }).then(String)
 }
 function baz() {
   return a.finally(() => {
@@ -31,7 +31,7 @@ function baz() {
       }
     }
     console.log('test')
-  })
+  }).then(String)
 }
 `
 
@@ -39,37 +39,37 @@ export const options = {}
 
 export const expected = `
 async function foo() {
-  return bar.finally(async () => {
+  return String(await bar.finally(async () => {
     switch (baz) {
       case 2: return
     }
     console.log('test')
-  })
+  }))
 }
 async function bar() {
-  return a.finally(async () => {
+  return String(await a.finally(async () => {
     for (const i of [1, 2, 3]) {
       return
     }
     console.log('test')
-  })
+  }))
 }
 async function qux() {
-  return a.finally(async () => {
+  return String(await a.finally(async () => {
     while (i) {
       return
     }
     console.log('test')
-  })
+  }))
 }
 async function baz() {
-  return a.finally(async () => {
+  return String(await a.finally(async () => {
     if (a) {
       if (b) {
         return
       }
     }
     console.log('test')
-  })
+  }))
 }
 `

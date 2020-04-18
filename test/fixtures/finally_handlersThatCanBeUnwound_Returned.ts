@@ -24,7 +24,7 @@ function f4() {
   return a.finally(() => {
     if (a) {
       if (b) {
-        return
+        return process(b)
       }
     }
   })
@@ -68,7 +68,7 @@ async function f4() {
   } finally {
     if (a) {
       if (b) {
-        
+        await process(b)  
       }
     }
   }

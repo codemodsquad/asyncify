@@ -17,9 +17,36 @@ function unwrapPromiseResolves(
   return node as t.Expression
 }
 
+function isEmptyBlock(path: NodePath<any>): boolean {
+  return path.isBlockStatement() && path.node.body.length === 0
+}
+
 export default function finalCleanup(path: NodePath<t.Function>): void {
   path.traverse(
     {
+      IfStatement: {
+        exit(path: NodePath<t.IfStatement>) {
+          const consequent = path.get('consequent')
+          const alternate = path.get('alternate')
+          if (isEmptyBlock(consequent)) {
+            if (alternate.node == null) {
+              path.remove()
+            } else if (isEmptyBlock(alternate)) {
+              path.remove()
+            } else {
+              path.replaceWith(
+                t.ifStatement(
+                  t.unaryExpression('!', path.node.test),
+                  alternate.node
+                )
+              )
+            }
+          } else if (isEmptyBlock(alternate)) {
+            path.node.alternate = null
+            alternate.remove()
+          }
+        },
+      },
       AwaitExpression(path: NodePath<t.AwaitExpression>) {
         const argument = path.get('argument')
         const { parentPath } = path

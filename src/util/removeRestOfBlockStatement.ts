@@ -3,9 +3,9 @@ import { NodePath } from '@babel/traverse'
 
 import parentStatement from './parentStatement'
 
-export default function restOfBlockStatement(
+export default function removeRestOfBlockStatement(
   path: NodePath<any>
-): NodePath<t.Statement>[] {
+): t.Statement[] {
   const statement = parentStatement(path)
   const blockStatement = statement.parentPath
   if (!blockStatement.isBlockStatement())
@@ -14,5 +14,8 @@ export default function restOfBlockStatement(
   const index = body.indexOf(statement)
   if (index < 0)
     throw new Error('failed to get index of Statement within BlockStatement')
-  return body.slice(index + 1)
+  const rest = body.slice(index + 1)
+  const statements = rest.map(p => p.node)
+  rest.forEach(p => p.remove())
+  return statements
 }

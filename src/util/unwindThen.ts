@@ -4,6 +4,7 @@ import { NodePath } from '@babel/traverse'
 import getPreceedingLink from './getPreceedingLink'
 import { awaited } from './builders'
 import { isNullish } from './predicates'
+import canUnwindAsIs from './canUnwindAsIs'
 import renameBoundIdentifiers from './renameBoundIdentifiers'
 import hasMutableIdentifiers from './hasMutableIdentifiers'
 import prependBodyStatement from './prependBodyStatement'
@@ -24,7 +25,11 @@ export function unwindThen(
     const handlerFunction = handler as NodePath<t.Function>
     const input = handlerFunction.get('params')[0]
     const body = handlerFunction.get('body')
-    if (body.isBlockStatement() && !convertConditionalReturns(body)) {
+    if (
+      body.isBlockStatement() &&
+      !canUnwindAsIs(link) &&
+      !convertConditionalReturns(body)
+    ) {
       return getPreceedingLink(link)
     }
 

@@ -5,7 +5,7 @@ function foo() {
       case 2: return
     }
     console.log('test')
-  }).then(String)
+  })
 }
 function bar() {
   return a.catch(b => {
@@ -13,7 +13,7 @@ function bar() {
       return
     }
     console.log('test')
-  }).then(String)
+  })
 }
 function qux() {
   return a.catch(b => {
@@ -21,7 +21,7 @@ function qux() {
       return
     }
     console.log('test')
-  }).then(String)
+  })
 }
 function baz() {
   return a.catch(b => {
@@ -31,7 +31,7 @@ function baz() {
       }
     }
     console.log('test')
-  }).then(String)
+  })
 }
 `
 
@@ -39,37 +39,45 @@ export const options = {}
 
 export const expected = `
 async function foo() {
-  return String(await bar.catch(async baz => {
-    switch (baz) {
+  try {
+    return await bar
+  } catch(baz0) {
+    switch (baz0) {
       case 2: return
     }
     console.log('test')
-  }))
+  }
 }
 async function bar() {
-  return String(await a.catch(async b => {
+  try {
+    return await a
+  } catch(b) {
     for (const i of [1, 2, 3]) {
       return
     }
     console.log('test')
-  }))
+  }
 }
 async function qux() {
-  return String(await a.catch(async b => {
+  try {
+    return await a
+  } catch (b) {
     while (i) {
       return
     }
     console.log('test')
-  }))
+  }
 }
 async function baz() {
-  return String(await a.catch(async b => {
+  try {
+    return await a
+  } catch (b) {
     if (a) {
       if (b) {
         return
       }
     }
     console.log('test')
-  }))
+  }
 }
 `
