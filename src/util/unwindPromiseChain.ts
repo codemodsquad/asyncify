@@ -1,7 +1,6 @@
 import * as t from '@babel/types'
 import { NodePath } from '@babel/traverse'
 
-import findAwaitedExpression from './findAwaitedExpression'
 import getThenHandler from './getThenHandler'
 import getCatchHandler from './getCatchHandler'
 import getFinallyHandler from './getFinallyHandler'
@@ -10,6 +9,7 @@ import { unwindThen } from './unwindThen'
 import unwindFinally from './unwindFinally'
 import parentStatement from './parentStatement'
 import replaceWithImmediatelyInvokedAsyncArrowFunction from './replaceWithImmediatelyInvokedAsyncArrowFunction'
+import findNextLinkToUnwind from './findNextLinkToUnwind'
 
 export default function unwindPromiseChain(
   path: NodePath<t.CallExpression>
@@ -24,10 +24,11 @@ export default function unwindPromiseChain(
 
   const { scope } = parentStatement(path)
 
-  let link: NodePath<t.Expression> | null = path as any
+  let link: NodePath<t.CallExpression> | null = path as any
 
-  while (link && link.isCallExpression()) {
-    const callee = (link as NodePath<t.CallExpression>).get('callee')
+  while (link) {
+    const origNode = link.node
+    const callee = link.get('callee')
     if (!callee.isMemberExpression()) break
 
     const thenHandler = getThenHandler(link)
@@ -42,7 +43,7 @@ export default function unwindPromiseChain(
     } else if (finallyHandler) {
       replacements = unwindFinally(finallyHandler)
     }
-    link = replacements ? findAwaitedExpression(replacements) : null
+    link = replacements ? findNextLinkToUnwind(replacements, origNode) : null
     ;(scope as any).crawl()
   }
 }
