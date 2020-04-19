@@ -25,7 +25,7 @@ async function createUser(args) {
     if (groups) {
       return await addUserToGroups(user, groups)
     }
-    return await user
+    return user
   } catch (err) {
     console.error(err.stack)
     return dummyUser()

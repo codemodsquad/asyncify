@@ -271,9 +271,9 @@ class ConnectionManager {
 
     if (query) {
       await connection1.query(query);
-      connection0 = await connection1;
+      connection0 = connection1;
     } else {
-      connection0 = await connection1;
+      connection0 = connection1;
     }
     if (Object.keys(this.nameOidMap).length === 0 &&
       this.enumOids.oids.length === 0 &&

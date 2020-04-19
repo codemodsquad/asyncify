@@ -37,7 +37,7 @@ async function createUser(args) {
       user0 = await addUserToGroups(user1, groups)
     } else {
       console.log('blah')
-      user0 = await user1
+      user0 = user1
     }
     if (groups) {
       console.log('test')

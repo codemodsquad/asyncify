@@ -60,6 +60,22 @@ export default function finalCleanup(path: NodePath<t.Function>): void {
           } else if (value) {
             argument.replaceWith(isInTryBlock(path) ? awaited(value) : value)
           }
+        } else if (argument.isIdentifier()) {
+          const binding = path.scope.getBinding(argument.node.name)
+          if (
+            binding &&
+            binding.constant &&
+            binding.path.isVariableDeclarator() &&
+            (binding.path as NodePath<t.VariableDeclarator>)
+              .get('init')
+              .isAwaitExpression()
+          ) {
+            if (parentPath.isExpressionStatement()) {
+              path.remove()
+            } else {
+              path.replaceWith(argument.node)
+            }
+          }
         }
       },
       ReturnStatement(path: NodePath<t.ReturnStatement>) {
