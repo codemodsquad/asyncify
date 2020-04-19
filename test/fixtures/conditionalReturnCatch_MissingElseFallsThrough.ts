@@ -42,7 +42,7 @@ async function createUser(args) {
       user = await addUserToGroups(user0, groups)
     } else {
       console.log('d')
-      user = await user0
+      user = user0
     }
   } catch (err) {
     console.error(err.stack)

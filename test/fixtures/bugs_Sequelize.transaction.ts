@@ -50,7 +50,7 @@ class Sequelize {
         await transaction.prepareEnvironment();
         const result = await autoCallback(transaction);
         await transaction.commit();
-        return await result;
+        return result;
       } catch (err) {
         // Rollback transaction if not already finished (commit, rollback, etc)
         // and reject with original error (ignore any error in rollback)
