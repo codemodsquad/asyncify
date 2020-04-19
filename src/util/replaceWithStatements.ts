@@ -15,6 +15,16 @@ export default function replaceWithStatements<Statements extends t.Statement[]>(
       'path must be a child of a BlockParent, SwitchCase, or IfStatement'
     )
   }
+  const oldNode = path.node
+  if (oldNode) {
+    if (oldNode && statements[0]) {
+      t.inheritLeadingComments(statements[0], oldNode)
+    }
+    if (oldNode && statements[statements.length - 1]) {
+      t.inheritTrailingComments(statements[statements.length - 1], oldNode)
+    }
+    t.removeComments(oldNode)
+  }
   if (!parentPath.isBlockStatement()) {
     return (path.replaceWith(t.blockStatement(statements)) as any)[0].get(
       'body'

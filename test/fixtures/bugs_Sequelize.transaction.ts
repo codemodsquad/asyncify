@@ -52,6 +52,8 @@ class Sequelize {
         await transaction.commit();
         return await result;
       } catch (err) {
+        // Rollback transaction if not already finished (commit, rollback, etc)
+        // and reject with original error (ignore any error in rollback)
         if (!transaction.finished) {
           try {
             await transaction.rollback();
