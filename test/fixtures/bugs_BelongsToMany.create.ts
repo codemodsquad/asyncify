@@ -50,9 +50,9 @@ class BelongsToMany {
       }
     }
 
+    // Create the related model instance
     const newAssociatedObject = await association.target.create(values, options);
     await sourceInstance[association.accessors.add](newAssociatedObject, _.omit(options, ['fields']));
-    // Create the related model instance
     return newAssociatedObject;
   }
 }

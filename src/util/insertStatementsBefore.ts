@@ -8,6 +8,11 @@ export default function insertStatementsBefore<
 >(path: NodePath<any>, statements: Statements): NodePaths<Statements> {
   let target = parentStatement(path)
   const { parentPath } = target
+  const firstStatement = Array.isArray(statements) ? statements[0] : statements
+  if (target.node && firstStatement) {
+    t.inheritLeadingComments(firstStatement, target.node)
+    target.node.leadingComments = null
+  }
   if (
     (parentPath.isBlockParent() || parentPath.isIfStatement()) &&
     !parentPath.isBlockStatement()
