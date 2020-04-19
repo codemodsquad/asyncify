@@ -79,14 +79,10 @@ export default function finalCleanup(path: NodePath<t.Function>): void {
             )
           } else argument.remove()
         } else if (value.isCallExpression() && isPromiseRejectCall(value)) {
-          path.replaceWith(
-            t.throwStatement(
-              t.newExpression(
-                t.identifier('Error'),
-                value.node.arguments.slice(0, 1)
-              )
-            )
-          )
+          const argument = value.node.arguments[0]
+          if (t.isExpression(argument)) {
+            path.replaceWith(t.throwStatement(argument))
+          }
         } else if (argument.isAwaitExpression() && !isInTryBlock(path)) {
           argument.replaceWith(argument.node.argument)
         }
