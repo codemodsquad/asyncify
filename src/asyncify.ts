@@ -10,7 +10,7 @@ import codeLength from './util/codeLength'
 import babelBugWorkarounds from './util/babelBugWorkarounds'
 
 function asyncifyFunction(path: NodePath<t.Function>): void {
-  if (returnsOrAwaitsPromises(path) || isPromiseHandler(path)) {
+  if (returnsOrAwaitsPromises(path)) {
     path.node.async = true
   }
   const chains = findPromiseChains(path)

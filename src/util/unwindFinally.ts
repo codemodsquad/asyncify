@@ -27,6 +27,7 @@ export default function unwindFinally(
     ) as any
   }
   const handlerFunction = handler as NodePath<t.Function>
+  handlerFunction.node.async = true
   const body = handlerFunction.get('body')
   if (body.isBlockStatement() && !convertConditionalReturns(body)) {
     return getPreceedingLink(link)

@@ -22,6 +22,7 @@ export function unwindThen(
   }
 
   if (handler.isFunction()) {
+    handler.node.async = true
     const handlerFunction = handler as NodePath<t.Function>
     const input = handlerFunction.get('params')[0]
     const body = handlerFunction.get('body')
