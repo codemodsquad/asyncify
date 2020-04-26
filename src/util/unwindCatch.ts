@@ -2,7 +2,7 @@ import * as t from '@babel/types'
 import { NodePath } from '@babel/traverse'
 
 import getPreceedingLink from './getPreceedingLink'
-import { isNullish } from './predicates'
+import { isNullish, isPromiseMethodCall } from './predicates'
 import canUnwindAsIs from './canUnwindAsIs'
 import replaceLink from './replaceLink'
 import renameBoundIdentifiers from './renameBoundIdentifiers'
@@ -39,16 +39,17 @@ export default function unwindCatch(
     ) as any
   }
   const handlerFunction = handler as NodePath<t.Function>
-  handlerFunction.node.async = true
   const body = handlerFunction.get('body')
   if (
     body.isBlockStatement() &&
-    !canUnwindAsIs(link) &&
-    !convertConditionalReturns(body)
+    ((body.node.body.length === 0 &&
+      !isPromiseMethodCall(getPreceedingLink(link).node)) ||
+      (!canUnwindAsIs(link) && !convertConditionalReturns(body)))
   ) {
-    return getPreceedingLink(link)
+    return []
   }
 
+  handlerFunction.node.async = true
   const input = handlerFunction.get('params')[0]
   if (input) renameBoundIdentifiers(input, link.scope)
   const inputNode = input?.node

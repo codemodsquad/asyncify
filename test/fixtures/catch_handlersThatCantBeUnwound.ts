@@ -39,7 +39,7 @@ export const options = {}
 
 export const expected = `
 async function foo() {
-  return String(await bar.catch(async baz => {
+  return String(await bar.catch(baz => {
     switch (baz) {
       case 2: return
     }
@@ -47,7 +47,7 @@ async function foo() {
   }))
 }
 async function bar() {
-  return String(await a.catch(async b => {
+  return String(await a.catch(b => {
     for (const i of [1, 2, 3]) {
       return
     }
@@ -55,7 +55,7 @@ async function bar() {
   }))
 }
 async function qux() {
-  return String(await a.catch(async b => {
+  return String(await a.catch(b => {
     while (i) {
       return
     }
@@ -63,7 +63,7 @@ async function qux() {
   }))
 }
 async function baz() {
-  return String(await a.catch(async b => {
+  return String(await a.catch(b => {
     if (a) {
       if (b) {
         return
