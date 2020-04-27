@@ -132,3 +132,18 @@ export function isInTryBlock(path: NodePath<any>): boolean {
   }
   return false
 }
+
+export function isLastStatementInBlock(path: NodePath<any>): boolean {
+  const { parentPath } = path
+  if (!parentPath.isBlockStatement()) return true
+  const body = (parentPath as NodePath<t.BlockStatement>).get('body')
+  return (path as NodePath<any>) === body[body.length - 1]
+}
+
+export function isLastStatementInFunction(path: NodePath<any>): boolean {
+  while (!path.isFunction()) {
+    if (!isLastStatementInBlock(path)) return false
+    path = path.parentPath
+  }
+  return true
+}

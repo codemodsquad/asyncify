@@ -2,13 +2,7 @@ import * as t from '@babel/types'
 import { NodePath } from '@babel/traverse'
 import replaceWithStatements from './replaceWithStatements'
 import removeRestOfBlockStatement from './removeRestOfBlockStatement'
-
-function isLastStatementInBlock(path: NodePath<any>): boolean {
-  const { parentPath } = path
-  if (!parentPath.isBlockStatement()) return true
-  const body = (parentPath as NodePath<t.BlockStatement>).get('body')
-  return (path as NodePath<any>) === body[body.length - 1]
-}
+import { isLastStatementInBlock } from './predicates'
 
 function hasReturn(path: NodePath<t.Statement>): boolean {
   if (path.isReturnStatement()) return true

@@ -6,6 +6,7 @@ import {
   isIdentifierAssignmentExpression,
   isIdentifierDeclarator,
   isInTryBlock,
+  isLastStatementInFunction,
 } from './predicates'
 import renameBoundIdentifiers from './renameBoundIdentifiers'
 import unboundIdentifier from './unboundIdentifier'
@@ -13,6 +14,7 @@ import replaceReturnStatements from './replaceReturnStatements'
 import { awaited } from './builders'
 import insertStatementsBefore from './insertStatementsBefore'
 import replaceWithStatements from './replaceWithStatements'
+import hasReturnStatements from './hasReturnStatements'
 
 function findReplaceTarget<T extends t.Node>(link: NodePath<T>): NodePath<any> {
   const { parentPath } = link
@@ -83,7 +85,6 @@ export default function replaceLink<T extends t.Expression | t.BlockStatement>(
       target.parentPath.isBlockParent() &&
       !target.parentPath.isBlockStatement()
     ) {
-      // return replaceBlockParent(target, t.blockStatement(replacement.node.body))
       return replaceWithStatements(target, replacement.node.body) as any
     } else if (target.isReturnStatement()) {
       if (isInTryBlock(target)) {
@@ -91,7 +92,15 @@ export default function replaceLink<T extends t.Expression | t.BlockStatement>(
           t.returnStatement(awaited(argument))
         )
       }
-      return replaceWithStatements(target, replacement.node.body) as any
+      if (
+        hasReturnStatements(replacement) ||
+        isLastStatementInFunction(target)
+      ) {
+        return replaceWithStatements(target, replacement.node.body) as any
+      } else {
+        ;(target as NodePath<t.ReturnStatement>).get('argument').remove()
+        return insertStatementsBefore(target, replacement.node.body) as any
+      }
     } else if (target.isExpressionStatement()) {
       replaceReturnStatements(replacement, argument =>
         t.expressionStatement(awaited(argument))
