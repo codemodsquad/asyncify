@@ -25,7 +25,7 @@ export default function finalCleanup(path: NodePath<t.Function>): void {
   path.traverse(
     {
       IfStatement: {
-        exit(path: NodePath<t.IfStatement>) {
+        exit(path: NodePath<t.IfStatement>): void {
           const consequent = path.get('consequent')
           const alternate = path.get('alternate')
           if (isEmptyBlock(consequent)) {

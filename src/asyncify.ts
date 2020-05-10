@@ -2,7 +2,7 @@ import * as t from '@babel/types'
 import { NodePath } from '@babel/traverse'
 
 import returnsOrAwaitsPromises from './util/returnsOrAwaitsPromises'
-import { isPromiseHandler, isPromiseMethodCall } from './util/predicates'
+import { isPromiseMethodCall } from './util/predicates'
 import findPromiseChains from './util/findPromiseChains'
 import unwindPromiseChain from './util/unwindPromiseChain'
 import finalCleanup from './util/finalCleanup'

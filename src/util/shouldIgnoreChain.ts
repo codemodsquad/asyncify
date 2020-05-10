@@ -8,7 +8,7 @@ import getFinallyHandler from './getFinallyHandler'
 
 function chainLength(path: NodePath<t.CallExpression>): number {
   let length = 0
-  for (const link of iterateChain(path)) length++
+  for (const link of iterateChain(path)) length++ // eslint-disable-line @typescript-eslint/no-unused-vars
   return length
 }
 

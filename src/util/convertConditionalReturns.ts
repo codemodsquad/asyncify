@@ -48,7 +48,7 @@ export default function convertConditionalReturns(
   parent.traverse(
     {
       IfStatement: {
-        enter(path: NodePath<t.IfStatement>) {
+        enter(path: NodePath<t.IfStatement>): void {
           if (path.parentPath.isIfStatement()) return
           ifDepth++
           const { returning, notReturning } = splitBranches(path)
@@ -62,7 +62,7 @@ export default function convertConditionalReturns(
             }
           }
         },
-        exit(path: NodePath<t.IfStatement>) {
+        exit(path: NodePath<t.IfStatement>): void {
           if (path.parentPath.isIfStatement()) return
           ifDepth--
         },
