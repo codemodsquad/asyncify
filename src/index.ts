@@ -15,6 +15,7 @@ module.exports = function index(
   })
 
   const ignoreChainsShorterThan = parseInt(options.ignoreChainsShorterThan)
+  const commentWorkarounds = options.commentWorkarounds
 
   let program: NodePath<t.Program> | undefined
   traverse(
@@ -26,7 +27,7 @@ module.exports = function index(
       },
     },
     undefined,
-    { ignoreChainsShorterThan }
+    { ignoreChainsShorterThan, commentWorkarounds }
   )
   if (!program) throw new Error('failed to find Program node')
   asyncify(program)

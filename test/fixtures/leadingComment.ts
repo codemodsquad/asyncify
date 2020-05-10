@@ -9,7 +9,9 @@ function foo() {
 }
 `
 
-export const options = {}
+export const options = {
+  commentWorkarounds: true,
+}
 
 export const expected = `
 async function foo() {

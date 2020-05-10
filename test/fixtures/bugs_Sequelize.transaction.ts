@@ -27,7 +27,9 @@ class Sequelize {
 }
 `
 
-export const options = {}
+export const options = {
+  commentWorkarounds: true,
+}
 
 export const expected = `
 class Sequelize {

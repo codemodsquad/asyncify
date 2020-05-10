@@ -35,3 +35,56 @@ npx jscodeshift -t asyncify/index.js path/to/your/project/**/*.js
 | All but one nested if/else/switch branch return                    | 🚫         |
 | More than one if/else/switch branch doesn't return                 | 🚫         |
 | Return inside loop                                                 | 🚫         |
+
+## Warnings
+
+Comments can sometimes get deleted due to an impedance mismatch between `@babel` and `recast`
+ASTs. If you use the `--commentWorkarounds=true` option it will try to prevent more comments
+from getting deleted but it sometimes causes an assertion to fail in `recast`.
+
+There are a few edge cases where `asyncify` produces funky output. It's intended to not break
+any existing behavior but sometimes the output will be be semantically wrong even if it behaves
+correctly. For example, I've seen a case where doing an async operation several times in a row:
+
+```js
+it('test', () => {
+  const doSomething = () => {
+    // ...
+  }
+
+  return doSomething()
+    .then(doSomething)
+    .then(doSomething)
+}
+```
+
+Gets converted to:
+
+```js
+it('test', async () => {
+  const doSomething = () => {
+    // ...
+  }
+  await doSomething(await doSomething(await doSomething()))
+})
+```
+
+This works even though it initially seems like it wouldn't and is obviously not what you want:
+
+```js
+it('test', async () => {
+  const doSomething = () => {
+    // ...
+  }
+  await doSomething()
+  await doSomething()
+  await doSomething()
+})
+```
+
+Although I could possibly fix this for cases where it's easy to determine that the function has
+no parameters, there could be cases where it's impossible to determine whether the identifier
+`doSomething` is even a function or whether it has parameters.
+
+At the moment, `.then(someIdentifier)` when `someIdentifier` is not a function is the only known
+case where the output behavior is wrong and will likely throw a `TypeError` (#15).
