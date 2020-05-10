@@ -22,9 +22,9 @@ function isComplexHandler(path: NodePath<t.Expression> | null): boolean {
 function hasComplexHandlers(path: NodePath<t.CallExpression>): boolean {
   for (const link of iterateChain(path)) {
     if (
-      isComplexHandler(getThenHandler(path)) ||
-      isComplexHandler(getCatchHandler(path)) ||
-      isComplexHandler(getFinallyHandler(path))
+      isComplexHandler(getThenHandler(link)) ||
+      isComplexHandler(getCatchHandler(link)) ||
+      isComplexHandler(getFinallyHandler(link))
     )
       return true
   }
