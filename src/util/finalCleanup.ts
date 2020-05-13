@@ -5,6 +5,7 @@ import {
   needsAwait,
   isPromiseRejectCall,
   isInTryBlock,
+  isLastStatementInFunction,
 } from './predicates'
 import { awaited } from './builders'
 
@@ -14,6 +15,8 @@ function unwrapPromiseResolves(
   while (node && isPromiseResolveCall(node)) {
     node = (node as t.CallExpression).arguments[0]
   }
+  if (node && node.type === 'Identifier' && node.name === 'undefined')
+    return undefined
   return node as t.Expression
 }
 
@@ -93,7 +96,11 @@ export default function finalCleanup(path: NodePath<t.Function>): void {
                 ? awaited(unwrapped)
                 : unwrapped
             )
-          } else argument.remove()
+          } else if (isLastStatementInFunction(path)) {
+            path.remove()
+          } else {
+            argument.remove()
+          }
         } else if (value.isCallExpression() && isPromiseRejectCall(value)) {
           const argument = value.node.arguments[0]
           if (t.isExpression(argument)) {
