@@ -43,7 +43,8 @@ ASTs. If you use the `--commentWorkarounds=true` option it will try to prevent m
 from getting deleted but it sometimes causes an assertion to fail in `recast`.
 
 There are a few edge cases where `asyncify` produces funky output. It's intended to not break
-any existing behavior but sometimes the output will be be semantically wrong even if it behaves
+any existing behavior (at the moment there are a few bugs that do, which I need to fix)
+but sometimes the output will be be semantically wrong even if it behaves
 correctly. For example, I've seen a case where doing an async operation several times in a row:
 
 ```js
@@ -85,6 +86,3 @@ it('test', async () => {
 Although I could possibly fix this for cases where it's easy to determine that the function has
 no parameters, there could be cases where it's impossible to determine whether the identifier
 `doSomething` is even a function or whether it has parameters.
-
-At the moment, `.then(someIdentifier)` when `someIdentifier` is not a function is the only known
-case where the output behavior is wrong and will likely throw a `TypeError` (#15).
