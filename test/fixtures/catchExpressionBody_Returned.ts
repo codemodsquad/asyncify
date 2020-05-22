@@ -1,4 +1,5 @@
 export const input = `
+const handleError = () => {}
 function foo() {
   return baz.catch(handleError)
 }
@@ -7,6 +8,7 @@ function foo() {
 export const options = {}
 
 export const expected = `
+const handleError = () => {}
 async function foo() {
   try {
     return await baz

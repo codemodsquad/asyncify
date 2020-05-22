@@ -11,6 +11,7 @@ import prependBodyStatement from './prependBodyStatement'
 import replaceLink from './replaceLink'
 import convertConditionalReturns from './convertConditionalReturns'
 import findNode from './findNode'
+import canDefinitelyInvoke from './canDefinitelyInvoke'
 
 export function unwindThen(
   handler: NodePath<t.Expression>
@@ -59,8 +60,11 @@ export function unwindThen(
       preceedingLink.node
     )
   }
-  return findNode(
-    replaceLink(link, t.callExpression(handler.node, [preceeding])) as any,
-    preceedingLink.node
-  )
+  if (canDefinitelyInvoke(handler)) {
+    return findNode(
+      replaceLink(link, t.callExpression(handler.node, [preceeding])) as any,
+      preceedingLink.node
+    )
+  }
+  return preceedingLink
 }

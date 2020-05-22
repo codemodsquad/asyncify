@@ -43,7 +43,7 @@ ASTs. If you use the `--commentWorkarounds=true` option it will try to prevent m
 from getting deleted but it sometimes causes an assertion to fail in `recast`.
 
 There are a few edge cases where `asyncify` produces funky output. It's intended to not break
-any existing behavior (at the moment there are a few bugs that do, which I need to fix)
+any existing behavior (I know of no cases where it does, and I have fixed several such issues)
 but sometimes the output will be be semantically wrong even if it behaves
 correctly. For example, I've seen a case where doing an async operation several times in a row:
 

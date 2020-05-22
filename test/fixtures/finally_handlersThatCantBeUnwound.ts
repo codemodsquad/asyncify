@@ -39,37 +39,37 @@ export const options = {}
 
 export const expected = `
 async function foo() {
-  return String(await bar.finally(async () => {
+  return bar.finally(async () => {
     switch (baz) {
       case 2: return
     }
     console.log('test')
-  }))
+  }).then(String)
 }
 async function bar() {
-  return String(await a.finally(async () => {
+  return a.finally(async () => {
     for (const i of [1, 2, 3]) {
       return
     }
     console.log('test')
-  }))
+  }).then(String)
 }
 async function qux() {
-  return String(await a.finally(async () => {
+  return a.finally(async () => {
     while (i) {
       return
     }
     console.log('test')
-  }))
+  }).then(String)
 }
 async function baz() {
-  return String(await a.finally(async () => {
+  return a.finally(async () => {
     if (a) {
       if (b) {
         return
       }
     }
     console.log('test')
-  }))
+  }).then(String)
 }
 `

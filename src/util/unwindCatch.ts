@@ -12,6 +12,7 @@ import mergeCatchIntoTryFinally from './mergeCatchIntoFinally'
 import { awaited } from './builders'
 import convertConditionalReturns from './convertConditionalReturns'
 import findNode from './findNode'
+import canDefinitelyInvoke from './canDefinitelyInvoke'
 
 export default function unwindCatch(
   handler: NodePath<t.Expression>
@@ -34,6 +35,9 @@ export default function unwindCatch(
   }
 
   if (!handler.isFunction()) {
+    if (!canDefinitelyInvoke(handler)) {
+      return getPreceedingLink(link)
+    }
     const callee = handler.node
     ;[handler] = handler.replaceWith(
       t.arrowFunctionExpression(

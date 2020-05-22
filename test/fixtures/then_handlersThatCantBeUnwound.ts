@@ -39,45 +39,37 @@ export const options = {}
 
 export const expected = `
 async function foo() {
-  return String(
-    await bar.then(async baz => {
-      switch (baz) {
-        case 2: return
-      }
-      console.log('test')
-    })
-  )
+  return bar.then(async baz => {
+    switch (baz) {
+      case 2: return
+    }
+    console.log('test')
+  }).then(String)
 }
 async function bar() {
-  return String(
-    await a.then(async b => {
-      for (const i of [1, 2, 3]) {
-        return
-      }
-      console.log('test')
-    })
-  )
+  return a.then(async b => {
+    for (const i of [1, 2, 3]) {
+      return
+    }
+    console.log('test')
+  }).then(String)
 }
 async function qux() {
-  return String(
-    await a.then(async b => {
-      while (i) {
-        return
-      }
-      console.log('test')
-    })
-  )
+  return a.then(async b => {
+    while (i) {
+      return
+    }
+    console.log('test')
+  }).then(String)
 }
 async function baz() {
-  return String(
-    await a.then(async b => {
-      if (a) {
-        if (b) {
-          return
-        }
+  return a.then(async b => {
+    if (a) {
+      if (b) {
+        return
       }
-      console.log('test')
-    })
-  )
+    }
+    console.log('test')
+  }).then(String)
 }
 `

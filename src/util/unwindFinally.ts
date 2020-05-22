@@ -10,6 +10,7 @@ import convertBodyToBlockStatement from './convertBodyToBlockStatement'
 import convertConditionalReturns from './convertConditionalReturns'
 import mergeStatementsIntoTryFinally from './mergeStatementsIntoTryFinally'
 import findNode from './findNode'
+import canDefinitelyInvoke from './canDefinitelyInvoke'
 
 export default function unwindFinally(
   handler: NodePath<t.Expression>
@@ -23,6 +24,9 @@ export default function unwindFinally(
   }
 
   if (!handler.isFunction()) {
+    if (!canDefinitelyInvoke(handler)) {
+      return preceedingLink
+    }
     const callee = handler.node
     ;[handler] = handler.replaceWith(
       t.arrowFunctionExpression([], t.callExpression(callee, []))
