@@ -108,18 +108,11 @@ it('should support many levels of belongsTo', async function() {
 
   await this.sequelize.sync({ force: true });
 
-  await A.bulkCreate([
-    {},
-    {},
-    {},
-    {},
-    {},
-    {},
-    {},
-    {}
-  ]);
-
-  const [as0, b] = await Promise.all([await A.findAll(), (function(singles) {
+  const [as0, b] = await Promise.all([
+    A.bulkCreate([{}, {}, {}, {}, {}, {}, {}, {}]).then(() => {
+      return A.findAll()
+    }),
+    (function(singles) {
     let promise = Promise.resolve(),
       previousInstance,
       b;

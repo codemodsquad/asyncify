@@ -9,7 +9,6 @@ import { unwindThen } from './unwindThen'
 import unwindFinally from './unwindFinally'
 import parentStatement from './parentStatement'
 import replaceWithImmediatelyInvokedAsyncArrowFunction from './replaceWithImmediatelyInvokedAsyncArrowFunction'
-import findNextLinkToUnwind from './findNextLinkToUnwind'
 
 export default function unwindPromiseChain(
   path: NodePath<t.CallExpression>
@@ -27,7 +26,6 @@ export default function unwindPromiseChain(
   let link: NodePath<t.CallExpression> | null = path as any
 
   while (link) {
-    const origNode = link.node
     const callee = link.get('callee')
     if (!callee.isMemberExpression()) break
 
@@ -35,15 +33,15 @@ export default function unwindPromiseChain(
     const catchHandler = getCatchHandler(link)
     const finallyHandler = getFinallyHandler(link)
 
-    let replacements: NodePath | NodePath[] | null = null
     if (catchHandler) {
-      replacements = unwindCatch(catchHandler)
+      link = unwindCatch(catchHandler)
     } else if (thenHandler) {
-      replacements = unwindThen(thenHandler)
+      link = unwindThen(thenHandler)
     } else if (finallyHandler) {
-      replacements = unwindFinally(finallyHandler)
+      link = unwindFinally(finallyHandler)
+    } else {
+      link = null
     }
-    link = replacements ? findNextLinkToUnwind(replacements, origNode) : null
     ;(scope as any).crawl()
   }
 }

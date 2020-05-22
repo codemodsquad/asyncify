@@ -9,15 +9,17 @@ import replaceReturnStatements from './replaceReturnStatements'
 import convertBodyToBlockStatement from './convertBodyToBlockStatement'
 import convertConditionalReturns from './convertConditionalReturns'
 import mergeStatementsIntoTryFinally from './mergeStatementsIntoTryFinally'
+import findNode from './findNode'
 
 export default function unwindFinally(
   handler: NodePath<t.Expression>
-): NodePath<any> | NodePath<any>[] {
+): NodePath<any> | null {
   const link = handler.parentPath as NodePath<t.CallExpression>
-  const preceeding = awaited(getPreceedingLink(link).node)
+  const preceedingLink = getPreceedingLink(link)
+  const preceeding = awaited(preceedingLink.node)
 
   if (isNullish(handler.node)) {
-    return replaceLink(link, preceeding)
+    return findNode(replaceLink(link, preceeding), preceedingLink.node)
   }
 
   if (!handler.isFunction()) {
@@ -30,7 +32,7 @@ export default function unwindFinally(
   handlerFunction.node.async = true
   const body = handlerFunction.get('body')
   if (body.isBlockStatement() && !convertConditionalReturns(body)) {
-    return getPreceedingLink(link)
+    return preceedingLink
   }
   body.replaceWith(
     t.blockStatement([
@@ -50,8 +52,9 @@ export default function unwindFinally(
   const finalBody = handlerFunction.get('body')
   ;(finalBody.scope as any).crawl()
   const tryStatement = finalBody.get('body.0') as NodePath<t.TryStatement>
-  return (
+  return findNode(
     mergeStatementsIntoTryFinally(link, tryStatement) ||
-    (replaceLink(link, finalBody) as any)
+      (replaceLink(link, finalBody) as any),
+    preceedingLink.node
   )
 }

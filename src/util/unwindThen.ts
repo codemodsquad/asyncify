@@ -10,15 +10,17 @@ import hasMutableIdentifiers from './hasMutableIdentifiers'
 import prependBodyStatement from './prependBodyStatement'
 import replaceLink from './replaceLink'
 import convertConditionalReturns from './convertConditionalReturns'
+import findNode from './findNode'
 
 export function unwindThen(
   handler: NodePath<t.Expression>
-): NodePath<any> | NodePath<any>[] {
+): NodePath<any> | null {
   const link = handler.parentPath as NodePath<t.CallExpression>
-  const preceeding = awaited(getPreceedingLink(link).node)
+  const preceedingLink = getPreceedingLink(link)
+  const preceeding = awaited(preceedingLink.node)
 
   if (isNullish(handler.node)) {
-    return replaceLink(link, preceeding)
+    return findNode(replaceLink(link, preceeding), preceedingLink.node)
   }
 
   if (handler.isFunction()) {
@@ -31,7 +33,7 @@ export function unwindThen(
       !canUnwindAsIs(link) &&
       !convertConditionalReturns(body)
     ) {
-      return getPreceedingLink(link)
+      return preceedingLink
     }
 
     if (input) renameBoundIdentifiers(input, link.scope)
@@ -52,7 +54,13 @@ export function unwindThen(
         prepended.get('declarations.0.id') as any
       )
     }
-    return replaceLink(link, handlerFunction.get('body')) as any
+    return findNode(
+      replaceLink(link, handlerFunction.get('body')) as any,
+      preceedingLink.node
+    )
   }
-  return replaceLink(link, t.callExpression(handler.node, [preceeding])) as any
+  return findNode(
+    replaceLink(link, t.callExpression(handler.node, [preceeding])) as any,
+    preceedingLink.node
+  )
 }

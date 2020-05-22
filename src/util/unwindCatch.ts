@@ -11,22 +11,26 @@ import convertBodyToBlockStatement from './convertBodyToBlockStatement'
 import mergeCatchIntoTryFinally from './mergeCatchIntoFinally'
 import { awaited } from './builders'
 import convertConditionalReturns from './convertConditionalReturns'
+import findNode from './findNode'
 
 export default function unwindCatch(
   handler: NodePath<t.Expression>
-): NodePath<any> | NodePath<any>[] {
+): NodePath<any> | null {
   const link = handler.parentPath as NodePath<t.CallExpression>
+  let preceedingLink
   let preceeding
   if (link.node.arguments.length === 2) {
-    preceeding = t.awaitExpression(
-      t.callExpression(link.node.callee, [link.node.arguments[0]])
-    )
+    preceedingLink = t.callExpression(link.node.callee, [
+      link.node.arguments[0],
+    ])
+    preceeding = t.awaitExpression(preceedingLink)
   } else {
-    preceeding = awaited(getPreceedingLink(link).node)
+    preceedingLink = getPreceedingLink(link).node
+    preceeding = awaited(preceedingLink)
   }
 
   if (isNullish(handler.node)) {
-    return replaceLink(link, preceeding)
+    return findNode(replaceLink(link, preceeding), preceedingLink)
   }
 
   if (!handler.isFunction()) {
@@ -46,7 +50,7 @@ export default function unwindCatch(
       !isPromiseMethodCall(getPreceedingLink(link).node)) ||
       (!canUnwindAsIs(link) && !convertConditionalReturns(body)))
   ) {
-    return []
+    return null
   }
 
   handlerFunction.node.async = true
@@ -79,8 +83,9 @@ export default function unwindCatch(
   const finalBody = handlerFunction.get('body') as NodePath<t.BlockStatement>
   ;(finalBody.scope as any).crawl()
   const tryStatement = finalBody.get('body')[0] as NodePath<t.TryStatement>
-  return (
+  return findNode(
     mergeCatchIntoTryFinally(link, tryStatement) ||
-    (replaceLink(link, finalBody) as any)
+      (replaceLink(link, finalBody) as any),
+    preceedingLink
   )
 }
