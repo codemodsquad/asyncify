@@ -8,7 +8,15 @@ export default function canDefinitelyInvoke<T extends t.Node>(
     let target: NodePath<any> | undefined = expr
     while (target) {
       if (target.isIdentifier()) {
-        target = target.scope.getBinding(target.node.name)?.path
+        const nextTarget: NodePath<any> | undefined = target.scope.getBinding(
+          target.node.name
+        )?.path
+        if (
+          nextTarget === target ||
+          (nextTarget && nextTarget.node === target.node)
+        )
+          break
+        target = nextTarget
       } else if (target.isVariableDeclarator()) {
         target = (target as NodePath<t.VariableDeclarator>).get('init')
       } else {
