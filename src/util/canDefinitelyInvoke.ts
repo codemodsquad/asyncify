@@ -11,11 +11,7 @@ export default function canDefinitelyInvoke<T extends t.Node>(
         const nextTarget: NodePath<any> | undefined = target.scope.getBinding(
           target.node.name
         )?.path
-        if (
-          nextTarget === target ||
-          (nextTarget && nextTarget.node === target.node)
-        )
-          break
+        if (nextTarget === target) break
         target = nextTarget
       } else if (target.isVariableDeclarator()) {
         target = (target as NodePath<t.VariableDeclarator>).get('init')
