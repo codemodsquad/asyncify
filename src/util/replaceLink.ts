@@ -127,9 +127,10 @@ export default function replaceLink<T extends t.Expression | t.BlockStatement>(
       return target.replaceWithMultiple(replacement.node.body) as any
     } else {
       const result = unboundIdentifier(replacement, 'result')
+      const declarator = t.variableDeclarator(result)
       replacement.unshiftContainer(
         'body',
-        template.statements.ast`let ${result}`
+        t.variableDeclaration('let', [declarator])
       )
       replaceReturnStatements(replacement, argument =>
         t.expressionStatement(

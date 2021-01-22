@@ -71,6 +71,7 @@ export default function unwindCatch(
       'TODO: these catch parameter node types are not supported yet'
     )
   }
+  if (inputNode) delete inputNode.typeAnnotation
   const catchClause = t.catchClause(
     inputNode || unboundIdentifier(handler, 'err'),
     convertBodyToBlockStatement(handlerFunction).node

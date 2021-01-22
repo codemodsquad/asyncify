@@ -2,7 +2,7 @@ export const input = `
 async function createUser(args) {
   const {username, groups} = args
   const user = await Users.create({username})
-    .then(user => {
+    .then((user: User) => {
       if (groups) {
         console.log('a')
       } else if (foo) {
@@ -14,7 +14,7 @@ async function createUser(args) {
       }
       return user
     })
-    .catch(err => {
+    .catch((err: Error) => {
       console.error(err.stack)
       return dummyUser()
     })
@@ -22,13 +22,14 @@ async function createUser(args) {
 `
 
 export const options = {}
+export const parser = 'babylon'
 
 export const expected = `
 async function createUser(args) {
   const {username, groups} = args
   let user
   try {
-    const user0 = await Users.create({ username })
+    const user0: User = await Users.create({ username })
     if (groups) {
       console.log('a')
       user = user0
