@@ -49,32 +49,7 @@ export default function textFixtures({
         : fixturePath
     )
     it(path.basename(fixturePath).replace(/\.js$/, ''), function() {
-      let source = input
-      const position = source.indexOf('// position')
-      let selectionStart
-      let selectionEnd
-      if (position >= 0) {
-        selectionStart = selectionEnd = position
-        source = source.replace(/^\s*\/\/ position[^\r\n]*(\r\n?|\n)/gm, '')
-      } else {
-        selectionStart = source.indexOf('/* selectionStart */')
-        if (selectionStart >= 0) {
-          source = source.replace('/* selectionStart */', '')
-          selectionEnd = source.indexOf('/* selectionEnd */')
-          if (selectionEnd < 0) {
-            throw new Error(
-              '/* selectionEnd */ must be given if /* selectionStart */ is'
-            )
-          }
-          source = source.replace('/* selectionEnd */', '')
-        }
-      }
-      if (selectionStart < 0) selectionStart = position
-      if (selectionEnd < 0) selectionEnd = position
       const options = { ...transformOptions, ...fixture.options }
-      if (selectionStart >= 0 && selectionEnd >= 0) {
-        Object.assign(options, { selectionStart, selectionEnd })
-      }
 
       const stats: Record<string, number> = {}
       const report = []
@@ -82,7 +57,7 @@ export default function textFixtures({
       const j = parser ? jscodeshift.withParser(parser) : jscodeshift
       const doTransform = (): string | null | void | undefined =>
         transform(
-          { path: file, source },
+          { path: file, source: input },
           {
             j,
             jscodeshift: j,
