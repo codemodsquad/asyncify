@@ -5,7 +5,7 @@ export default function canDefinitelyInvoke<T extends t.Node>(
   expr: NodePath<T>
 ): boolean {
   if (expr.isIdentifier()) {
-    let target: NodePath<any> | undefined = expr
+    let target: NodePath<any> | undefined = expr as NodePath<any>
     while (target) {
       if (target.isIdentifier()) {
         const nextTarget: NodePath<any> | undefined = target.scope.getBinding(

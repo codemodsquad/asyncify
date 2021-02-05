@@ -32,7 +32,7 @@ function findReplaceTarget<T extends t.Node>(link: NodePath<T>): NodePath<any> {
       declaration.isVariableDeclaration() &&
       declaration.node.declarations.length === 1
     ) {
-      return declaration
+      return declaration as NodePath<any>
     }
   }
   return link
@@ -78,7 +78,10 @@ export default function replaceLink<T extends t.Expression | t.BlockStatement>(
       const { parentPath } = link
       const target = parentPath.isAwaitExpression() ? parentPath : link
       target.replaceWith(awaited(value))
-      return insertStatementsBefore(target, replacement.node.body) as any
+      return insertStatementsBefore(
+        target as NodePath<any>,
+        replacement.node.body
+      ) as any
     }
     const target = findReplaceTarget(link)
     if (
