@@ -13,9 +13,10 @@ but written from scratch to guarantee the same behavior and tidy code as best as
 ## Usage
 
 ```
-git clone https://github.com/codemodsquad/asyncify
-npx jscodeshift -t asyncify/index.js path/to/your/project/**/*.js
+npx @codemodsquad/asyncify path/to/your/project/**/*.js
 ```
+
+This command just forwards to `jscodeshift`, you can pass other `jscodeshift` CLI options.
 
 ## Support table
 

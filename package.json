@@ -3,6 +3,7 @@
   "version": "0.0.0-development",
   "description": "transforms promise chains into async/await",
   "sideEffects": false,
+  "bin": "./bin/index.js",
   "scripts": {
     "lint": "eslint $npm_package_config_lint",
     "lint:fix": "eslint $npm_package_config_lint",
