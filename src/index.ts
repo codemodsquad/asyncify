@@ -2,7 +2,6 @@ import { FileInfo, API, Options } from 'jscodeshift'
 import traverse, { NodePath } from '@babel/traverse'
 import * as t from '@babel/types'
 import asyncify from './asyncify'
-import * as recast from 'recast'
 import recastBugWorkarounds from './util/recastBugWorkarounds'
 
 module.exports = function index(
@@ -10,9 +9,8 @@ module.exports = function index(
   api: API,
   options: Options
 ): string | null | undefined | void {
-  const ast = recast.parse(fileInfo.source, {
-    parser: require('recast/parsers/babel'),
-  })
+  const j = api.jscodeshift(fileInfo.source);
+  const ast = j.get().value;
 
   const ignoreChainsShorterThan = parseInt(options.ignoreChainsShorterThan)
   const commentWorkarounds = options.commentWorkarounds
@@ -32,5 +30,5 @@ module.exports = function index(
   if (!program) throw new Error('failed to find Program node')
   asyncify(program)
   recastBugWorkarounds(program)
-  return recast.print(ast).code
+  return j.toSource()
 }
