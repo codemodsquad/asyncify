@@ -8,7 +8,7 @@
 
 Transforms promise chains into `async`/`await`. I wrote this to refactor the 5000+ `.then`/`.catch`/`.finally` calls in the
 `sequelize` codebase. This is slightly inspired by [async-await-codemod](https://github.com/sgilroy/async-await-codemod),
-but written from scratch to guarantee the same behavior and tidy code as best as I can manage.
+but written from scratch to guarantee that it doesn't change the behavior of the transformed code, and keeps the code reasonably tidy.
 
 ## Usage
 
