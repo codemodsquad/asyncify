@@ -11,7 +11,7 @@ module.exports = function index(
   options: Options
 ): string | null | undefined | void {
   const ast = options.noRecastWorkaround
-    ? api.jscodeshift(fileInfo.source).get()
+    ? api.jscodeshift(fileInfo.source).get().value
     : recast.parse(fileInfo.source, {
         parser: require('recast/parsers/babel'),
       })
