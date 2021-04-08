@@ -87,3 +87,22 @@ it('test', async () => {
 Although I could possibly fix this for cases where it's easy to determine that the function has
 no parameters, there could be cases where it's impossible to determine whether the identifier
 `doSomething` is even a function or whether it has parameters.
+
+## Disabling `recast` workaround
+
+At the time I wrote `asyncify`, there were some show-stopping bugs in old version of `recast` that
+`jscodeshift` depended on. To avoid this problem, `asyncify` parses with a newer version of `recast` in its
+own dependencies, instead of parsing with the `jscodeshift` API. The author of `putout` has asked to be able
+to parse with the injected `jscodeshift` API for performance, so you can access that version of the
+`jscodeshift` transform as:
+
+```js
+import transform from '@codemodsquad/asyncify/noRecastWorkaround'
+```
+
+Or there are two ways you can do it when running via `jscodeshift`:
+
+```
+jscodeshift -t path/to/asyncify/noRecastWorkaround.js
+jscodeshift -t path/to/asyncify/index.js --noRecastWorkaround=true
+```

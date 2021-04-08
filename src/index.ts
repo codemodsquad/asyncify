@@ -10,9 +10,11 @@ module.exports = function index(
   api: API,
   options: Options
 ): string | null | undefined | void {
-  const ast = recast.parse(fileInfo.source, {
-    parser: require('recast/parsers/babel'),
-  })
+  const ast = options.noRecastWorkaround
+    ? api.jscodeshift(fileInfo.source).get()
+    : recast.parse(fileInfo.source, {
+        parser: require('recast/parsers/babel'),
+      })
 
   const ignoreChainsShorterThan = parseInt(options.ignoreChainsShorterThan)
   const commentWorkarounds = options.commentWorkarounds
