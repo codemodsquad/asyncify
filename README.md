@@ -57,7 +57,7 @@ it('test', () => {
   return doSomething()
     .then(doSomething)
     .then(doSomething)
-}
+})
 ```
 
 Gets converted to:
