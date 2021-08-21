@@ -8,9 +8,10 @@ import unwindPromiseChain from './util/unwindPromiseChain'
 import finalCleanup from './util/finalCleanup'
 import codeLength from './util/codeLength'
 import babelBugWorkarounds from './util/babelBugWorkarounds'
+import isGetterOrSetter from './util/isGetterOrSetter'
 
 function asyncifyFunction(path: NodePath<t.Function>): void {
-  if (returnsOrAwaitsPromises(path)) {
+  if (returnsOrAwaitsPromises(path) && !isGetterOrSetter(path)) {
     path.node.async = true
   }
   const chains = findPromiseChains(path)

@@ -9,14 +9,16 @@ import { unwindThen } from './unwindThen'
 import unwindFinally from './unwindFinally'
 import parentStatement from './parentStatement'
 import replaceWithImmediatelyInvokedAsyncArrowFunction from './replaceWithImmediatelyInvokedAsyncArrowFunction'
+import isGetterOrSetter from './isGetterOrSetter'
 
 export default function unwindPromiseChain(
   path: NodePath<t.CallExpression>
 ): void {
   if (
-    !path.parentPath.isAwaitExpression() &&
-    !path.parentPath.isReturnStatement() &&
-    !path.parentPath.isFunction()
+    (!path.parentPath.isAwaitExpression() &&
+      !path.parentPath.isReturnStatement() &&
+      !path.parentPath.isFunction()) ||
+    isGetterOrSetter(path.getFunctionParent())
   ) {
     path = replaceWithImmediatelyInvokedAsyncArrowFunction(path)[1]
   }
