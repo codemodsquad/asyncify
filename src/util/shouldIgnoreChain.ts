@@ -5,6 +5,7 @@ import iterateChain from './iterateChain'
 import getThenHandler from './getThenHandler'
 import getCatchHandler from './getCatchHandler'
 import getFinallyHandler from './getFinallyHandler'
+import isGetterOrSetter from './isGetterOrSetter'
 
 function chainLength(path: NodePath<t.CallExpression>): number {
   let length = 0
@@ -36,9 +37,10 @@ export default function shouldIgnoreChain(
 ): boolean {
   const { parentPath } = path
   if (
-    !parentPath.isReturnStatement() &&
-    !parentPath.isAwaitExpression() &&
-    !parentPath.isFunction()
+    (!parentPath.isReturnStatement() &&
+      !parentPath.isAwaitExpression() &&
+      !parentPath.isFunction()) ||
+    isGetterOrSetter(path.getFunctionParent())
   ) {
     if (chainLength(path) <= 2 && !hasComplexHandlers(path)) return true
   }
